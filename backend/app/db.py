@@ -87,6 +87,35 @@ class Investigation(Base):
     reviewed_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
 
 
+class Site(Base):
+    __tablename__ = "sites"
+    id: Mapped[str] = mapped_column(primary_key=True, default=uid)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+
+
+class Camera(Base):
+    __tablename__ = "cameras"
+    __table_args__ = (UniqueConstraint("site_id", "name", name="uq_site_camera"),)
+    id: Mapped[str] = mapped_column(primary_key=True, default=uid)
+    site_id: Mapped[str] = mapped_column(ForeignKey("sites.id"))
+    name: Mapped[str] = mapped_column(String(255))
+    source: Mapped[str]
+    zone: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    labels: Mapped[list] = mapped_column(JSON, default=list)
+    enabled: Mapped[bool] = mapped_column(default=True)
+
+
+class Alert(Base):
+    __tablename__ = "alerts"
+    id: Mapped[str] = mapped_column(primary_key=True, default=uid)
+    camera_id: Mapped[str] = mapped_column(ForeignKey("cameras.id"))
+    kind: Mapped[str]
+    status: Mapped[str] = mapped_column(default="open")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    snapshot_key: Mapped[str]
+    details: Mapped[dict] = mapped_column(JSON)
+
+
 def make_sessions(url: str):
     kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {}
     engine = create_engine(url, **kwargs)

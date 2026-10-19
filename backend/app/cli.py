@@ -1,11 +1,14 @@
 import argparse
 import getpass
+import json
+from pathlib import Path
 
 from sqlalchemy import select, update
 
 from app.auth import hash_password
 from app.config import settings
 from app.db import Job, User, make_sessions
+from app.services.sites import seed_site
 
 
 def main():
@@ -16,9 +19,16 @@ def main():
     user.add_argument("--role", choices=["viewer", "operator", "admin"], default="operator")
     recover = commands.add_parser("recover-job", help="Only after confirming the previous worker is stopped")
     recover.add_argument("job_id")
+    seed = commands.add_parser("seed-site", help="Create or update a site and its cameras from a JSON file")
+    seed.add_argument("path", type=Path)
     args = parser.parse_args()
     cfg = settings()
     engine, sessions = make_sessions(cfg.database_url)
+    if args.command == "seed-site":
+        seed_site(sessions, json.loads(args.path.read_text(encoding="utf-8")))
+        engine.dispose()
+        print("Done")
+        return
     with sessions() as db:
         if args.command == "create-user":
             if db.scalar(select(User).where(User.email == args.email.lower())):
