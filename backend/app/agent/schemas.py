@@ -16,5 +16,5 @@ def validate_report(report: Report, retrieved: dict[str, dict]) -> dict:
     result = report.model_dump()
     result["sources"] = [retrieved[key] for key in dict.fromkeys(report.citation_ids)]
     if not report.citation_ids:
-        result["limitations"].append("Aucune procédure documentaire citée ; validation humaine nécessaire.")
+        result["limitations"].append("No documented procedure cited; human review required.")
     return result

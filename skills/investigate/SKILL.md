@@ -1,12 +1,12 @@
-# Investigation d'une présence en zone surveillée
+# Investigating a presence in a monitored zone
 
-1. Examiner les observations, l'horodatage, la zone et le seuil configuré.
-2. Consulter les événements proches si cela apporte du contexte.
-3. Retrouver les procédures applicables, leurs IDs et leurs pages.
-4. Consulter les tickets existants si utile pour éviter une proposition redondante.
-5. Distinguer les observations, les hypothèses et les informations manquantes.
-6. Préparer un rapport factuel, les références et une recommandation vérifiable.
-7. Ne déclencher aucune action externe. Une personne validera le rapport.
+1. Review the observations, timestamp, zone and configured threshold.
+2. Check nearby events if they add context.
+3. Find the applicable procedures, their IDs and their pages.
+4. Check existing tickets when useful to avoid a redundant proposal.
+5. Separate observations, hypotheses and missing information.
+6. Prepare a factual report, references and a verifiable recommendation.
+7. Trigger no external action. A person will review the report.
 
-Un track_id est un identifiant technique temporaire, pas l'identité d'une personne.
-Une présence détectée ne prouve pas une intrusion malveillante.
+A track_id is a temporary technical identifier, not a person's identity.
+A detected presence does not prove a malicious intrusion.
