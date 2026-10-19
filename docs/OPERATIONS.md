@@ -7,7 +7,7 @@
 | `frontend` | Unprivileged Nginx, compiled React and HTTP proxy | Immutable build |
 | `api` | Uvicorn / FastAPI | PostgreSQL and files |
 | `worker` | Celery, `processing` queue, concurrency 1 | SQL jobs and files |
-| `investigator` | Celery, `investigation` queue, concurrency 1 | SQLite checkpoints, tickets and SQL |
+| `investigator` | Celery, `investigation` queue, concurrency 1 | PostgreSQL checkpoints, tickets and SQL |
 | `scheduler` | Celery Beat, outbox sweep every 30 seconds | Schedule file |
 | `migrate` | Alembic, single run | PostgreSQL schema |
 | `postgres` | Business data | `postgres-data` volume |
@@ -72,9 +72,10 @@ An investigation moves from `queued` to `awaiting_review`, then `review_queued`,
 and finally `approved` or `rejected`. The job status shows any intermediate
 failure. A report approved without a ticket creates no MCP object.
 
-SQLite checkpoints are shared across invocations, under a single investigation
-queue and a single worker with concurrency 1. **Do not replicate this worker**
-without replacing the saver and adding distributed coordination.
+Under Docker, LangGraph checkpoints are stored in PostgreSQL (tables created by
+`PostgresSaver.setup()` on first use), so several investigation workers can share
+them. Local development without PostgreSQL falls back to `checkpoints.db`
+(SQLite) in the data directory, which suits a single worker only.
 
 ## Diagnosis and recovery
 

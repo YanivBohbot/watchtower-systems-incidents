@@ -69,7 +69,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    # Singleton protects the SQLite checkpoint saver. Do not scale this service.
+    # LangGraph checkpoints live in PostgreSQL (see app/agent/checkpoints.py).
     command: [celery, -A, app.tasks:celery, worker, -Q, investigation, --concurrency=1, --loglevel=INFO]
   scheduler:
     <<: *backend

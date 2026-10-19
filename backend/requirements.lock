@@ -130,8 +130,11 @@ langgraph==1.2.16
 langgraph-checkpoint==4.3.0
     # via
     #   langgraph
+    #   langgraph-checkpoint-postgres
     #   langgraph-checkpoint-sqlite
     #   langgraph-prebuilt
+langgraph-checkpoint-postgres==3.2.0
+    # via watchtower-backend (pyproject.toml)
 langgraph-checkpoint-sqlite==3.1.2
     # via watchtower-backend (pyproject.toml)
 langgraph-prebuilt==1.1.1
@@ -160,6 +163,7 @@ opentelemetry-api==1.45.1
     # via fastapi
 orjson==3.13.0
     # via
+    #   langgraph-checkpoint-postgres
     #   langgraph-sdk
     #   langsmith
 ormsgpack==1.13.0
@@ -179,9 +183,13 @@ prompt-toolkit==3.0.53
 protobuf==7.36.2
     # via qdrant-client
 psycopg==3.3.6
-    # via watchtower-backend (pyproject.toml)
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   langgraph-checkpoint-postgres
 psycopg-binary==3.3.6
     # via psycopg
+psycopg-pool==3.3.3
+    # via langgraph-checkpoint-postgres
 pycparser==3.11
     # via cffi
 pydantic==2.14.1
@@ -287,6 +295,7 @@ typing-extensions==4.16.0
     #   openai
     #   opentelemetry-api
     #   psycopg
+    #   psycopg-pool
     #   pydantic
     #   pydantic-core
     #   pydantic-settings

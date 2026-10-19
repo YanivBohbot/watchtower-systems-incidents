@@ -2,16 +2,15 @@
 
 import asyncio
 import json
-import sqlite3
 
 from langchain_openai import OpenAIEmbeddings
-from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import Command
 
 from app.adapters.storage import LocalStorage
 from app.adapters.tickets import McpTickets
 from app.adapters.vectors import QdrantIndex
 from app.adapters.vision import YoloDetector
+from app.agent.checkpoints import open_checkpointer
 from app.agent.investigator import Investigator
 from app.agent.workflow import build_workflow
 from app.config import settings
@@ -57,9 +56,9 @@ def execute(kind, resource_id, progress):
                     inv.status, inv.report, inv.ticket = status, report, ticket
                     db.commit()
 
-            with sqlite3.connect(str(cfg.data_dir / "checkpoints.db"), check_same_thread=False) as conn:
+            with open_checkpointer(cfg.database_url, cfg.data_dir) as saver:
                 graph = build_workflow(
-                    SqliteSaver(conn),
+                    saver,
                     lambda incident_id: asyncio.run(investigator.run(incident_id)),
                     lambda inv_id, report: asyncio.run(tickets.publish(inv_id, report)),
                     save,

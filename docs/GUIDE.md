@@ -283,8 +283,10 @@ go through this loop.
 This is the **composition root**. `knowledge_service()` selects the embeddings
 and Qdrant. `execute()` routes a job type to the right service.
 
-For an investigation, it wires the agent, the MCP server, the SQLite saver and
-the graph. `thread_id` is the investigation ID. A new invocation starts the
+For an investigation, it wires the agent, the MCP server, the checkpoint saver
+and the graph. `agent/checkpoints.py` picks the saver: `PostgresSaver` when the
+application database is PostgreSQL (`checkpoint_url()` turns the SQLAlchemy URL
+`postgresql+psycopg://…` into a plain libpq URL), `SqliteSaver` otherwise. `thread_id` is the investigation ID. A new invocation starts the
 graph; a resume uses `Command(resume=...)`. A completed graph is not restarted
 when the job is delivered again. If `finalize` failed, it resumes from its
 checkpoint without asking the LLM for the report again.

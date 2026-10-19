@@ -132,8 +132,6 @@ environment's Python if `python` is not already that interpreter, then run
   replacement, but the S3 adapter is not included in this V1.
 - The LLM receives structured observations and links to the evidence, not the
   pixels of the capture. Multimodal analysis with a VLM is a separate extension.
-- A single investigation worker; SQLite checkpoints. To distribute it, replace
-  the saver with PostgreSQL and revisit locking.
 - The UI refreshes by polling, not SSE/WebSocket.
 - No SSO, multi-tenancy, public TLS, autoscaling or external monitoring configured.
 

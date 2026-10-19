@@ -7,7 +7,8 @@ dependencies = [
   "python-multipart==0.0.32", "pydantic-settings==2.16.0", "PyJWT==2.15.1",
   "celery==5.6.3", "redis==8.1.0", "qdrant-client==1.19.1", "pypdf==6.21.1",
   "langchain==1.4.6", "langchain-openai==1.7.2", "langgraph==1.2.16",
-  "langgraph-checkpoint-sqlite==3.1.2", "langchain-mcp-adapters==0.3.2", "mcp==1.30.0",
+  "langgraph-checkpoint-sqlite==3.1.2", "langgraph-checkpoint-postgres==3.2.0",
+  "langchain-mcp-adapters==0.3.2", "mcp==1.30.0",
   "opencv-python-headless==5.0.0.93", "alembic>=1.16,<2"
 ]
 
