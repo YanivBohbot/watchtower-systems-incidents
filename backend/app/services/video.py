@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from app.db import Incident, Video, uid
 from app.domain.rules import DwellRule, Observation, Zone
+from app.services.annotate import annotate, encode_jpeg
 
 
 class VideoService:
@@ -41,32 +42,14 @@ class VideoService:
                         seconds = n / fps
                         if seconds > self.max_seconds:
                             raise ValueError("Decoded video exceeds duration limit")
-                        h, w = frame.shape[:2]
                         for obj in detector.track(frame):
                             observation = Observation(obj.track_id, (obj.x1 + obj.x2) / 2, obj.y2, seconds)
                             if not rule.feed(observation) or obj.track_id in existing:
                                 continue
-                            evidence = frame.copy()
-                            cv2.rectangle(
-                                evidence,
-                                (int(zone.x1 * w), int(zone.y1 * h)),
-                                (int(zone.x2 * w), int(zone.y2 * h)),
-                                (0, 200, 255),
-                                2,
-                            )
-                            cv2.rectangle(
-                                evidence,
-                                (int(obj.x1 * w), int(obj.y1 * h)),
-                                (int(obj.x2 * w), int(obj.y2 * h)),
-                                (0, 255, 0),
-                                2,
-                            )
-                            success, encoded = cv2.imencode(".jpg", evidence)
-                            if not success:
-                                raise ValueError("Could not encode evidence")
+                            evidence = annotate(frame, zone.model_dump(), [(obj.x1, obj.y1, obj.x2, obj.y2)])
                             incident_id = uid()
                             key = f"evidence/{incident_id}.jpg"
-                            self.storage.put(key, encoded.tobytes())
+                            self.storage.put(key, encode_jpeg(evidence))
                             db.add(
                                 Incident(
                                     id=incident_id,
