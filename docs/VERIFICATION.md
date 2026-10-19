@@ -59,11 +59,11 @@ OPERATIONS.md.
 
 | Check | Result | Actual scope |
 |---|---|---|
-| Python suite `pytest -q` (Python 3.12, Windows) | **49 passed, 2 skipped** | Adds site seeding, camera runner pacing, loop restart, source errors, live API routes, SSE stream, 503 when the hub is down |
+| Python suite `pytest -q` (Python 3.12, Windows) | **52 passed, 2 skipped** | Adds site seeding, camera runner pacing, slow analysis, loop restart, source errors, live hub outage, live API routes, SSE stream, 503 when the hub is down |
 | Ruff | **Passed** | `ruff check app tests migrations` |
 | Alembic migration `0003` | **Passed on SQLite** | Schema comparison test; not run against PostgreSQL |
 | React build `npm run build` | **Passed** | TypeScript check and Vite bundle |
-| Playwright | **2 scenarios passed** | Chromium, real test FastAPI server with an in-memory hub: camera wall, alert pushed over SSE without reload, dismiss; existing workspace scenario |
+| Playwright | **3 scenarios passed** | Chromium, real test FastAPI server with an in-memory hub: camera wall, alert pushed over SSE without reload, dismiss; alert reaching the banner by polling while the event stream is blocked; existing workspace scenario |
 | Camera runner with real video decoding | **Passed** | Generated MJPG clips decoded by OpenCV; the detector is a deterministic double |
 | Redis hub | **Not run** | `test_redis_hub_round_trip` is skipped without `WATCHTOWER_TEST_REDIS_URL` |
 | Real YOLO on a live camera, `python -m app.live` | **Not run** | No end-to-end run with real footage, Redis and the browser together |

@@ -1,5 +1,6 @@
 """HTTP adapter: validate input, enforce roles, persist jobs, dispatch IDs."""
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -10,7 +11,8 @@ from pathlib import Path
 from uuid import uuid4
 
 import jwt
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -328,23 +330,28 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None, hub=None):
         return Response(storage.read(key), media_type="image/jpeg")
 
     @app.get("/api/live/events")
-    def live_events(user=Depends(current)):
-        subscription = live(hub.subscribe)
+    async def live_events(request: Request, user=Depends(current)):
+        subscription = await run_in_threadpool(live, hub.subscribe)
 
-        def stream():
-            # Runs in a worker thread; the heartbeat lets the server notice a closed connection.
+        async def stream():
+            # Polls without blocking, so an open wall tab does not hold a worker thread.
             try:
                 yield ": connected\n\n"
-                idle = 0
-                while True:
-                    event = subscription.get(timeout=1)
+                idle = 0.0
+                while not await request.is_disconnected():
+                    try:
+                        event = subscription.get(timeout=0)
+                    except Exception:
+                        log.warning("Live hub lost; closing the event stream", exc_info=True)
+                        return  # the browser reconnects and reloads the alert list
                     if event is None:
-                        idle += 1
+                        await asyncio.sleep(0.25)
+                        idle += 0.25
                         if idle >= 15:
-                            idle = 0
+                            idle = 0.0
                             yield ": ping\n\n"
                         continue
-                    idle = 0
+                    idle = 0.0
                     yield f"event: {event['type']}\ndata: {json.dumps(event)}\n\n"
             finally:
                 subscription.close()

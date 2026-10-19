@@ -39,33 +39,43 @@ class CameraRunner:
         self.source_factory, self.detector_factory = source_factory, detector_factory
         self.hub, self.sessions, self.storage = hub, sessions, storage
         self.clock, self.analysis_fps = clock, analysis_fps
-        self.source = None
+        self.source = self.detector = None
         self.frames_analyzed = 0
         self.position = 0  # frames consumed from the source since it was opened
+        self.last_step = None
 
     def _open(self):
         self.source = self.source_factory()
         self.started, self.position, self.loops = self.clock(), 0, self.source.loops
+        if self.detector is None:
+            self.detector = self.detector_factory()  # loads model weights: once per camera
         self._reset()
+
+    def _close(self):
+        if self.source is not None and hasattr(self.source, "close"):
+            self.source.close()
+        self.source = None
 
     def _reset(self):
         """Tracker IDs restart with the video, so the tracker and the rule restart too."""
-        self.detector = self.detector_factory()
-        self.rule = (
-            DwellRule(Zone.model_validate(self.zone), max_gap=max(1.0, 3 / self.analysis_fps)) if self.zone else None
-        )
+        if hasattr(self.detector, "reset"):
+            self.detector.reset()
+        self.rule = DwellRule(Zone.model_validate(self.zone)) if self.zone else None
 
     def _status(self, state, error=None):
-        self.hub.put_status(
-            self.camera_id,
-            {
-                "state": state,
-                "frames_analyzed": self.frames_analyzed,
-                "analysis_fps": self.analysis_fps,
-                "last_seen": datetime.now(timezone.utc).isoformat(),
-                "error": error,
-            },
-        )
+        try:
+            self.hub.put_status(
+                self.camera_id,
+                {
+                    "state": state,
+                    "frames_analyzed": self.frames_analyzed,
+                    "analysis_fps": self.analysis_fps,
+                    "last_seen": datetime.now(timezone.utc).isoformat(),
+                    "error": error,
+                },
+            )
+        except Exception:
+            log.warning("Camera %s: live hub unavailable", self.camera_id, exc_info=True)
 
     def step(self) -> bool:
         """Analyze the frame matching the current wall-clock time; late frames are skipped, never queued."""
@@ -83,10 +93,17 @@ class CameraRunner:
             if self.source.loops != self.loops:
                 self.loops = self.source.loops
                 self._reset()
+            now = self.clock()
+            if self.rule is not None:
+                # A track counts as continuous across one slow step, so slow analysis delays alerts
+                # instead of silently preventing them.
+                interval = now - self.last_step if self.last_step is not None else 0
+                self.rule.max_gap = max(1.0, 3 / self.analysis_fps, 2.5 * interval)
+            self.last_step = now
             self._analyze(frame, self.position / self.source.fps)
         except Exception as error:
             log.exception("Camera %s failed", self.camera_id)
-            self.source = None
+            self._close()
             self._status("error", f"{type(error).__name__}: {error}")
             return False
         self.frames_analyzed += 1
@@ -125,7 +142,12 @@ class CameraRunner:
         """Loop until `stop` (a threading.Event) is set; a failing source is retried, never fatal."""
         while not stop.is_set():
             began = self.clock()
-            if not self.step():
+            try:
+                ok = self.step()
+            except Exception:  # never let one bad step end the camera thread
+                log.exception("Camera %s: unexpected error", self.camera_id)
+                ok = False
+            if not ok:
                 stop.wait(retry_seconds)
                 continue
             stop.wait(max(0.0, 1 / self.analysis_fps - (self.clock() - began)))

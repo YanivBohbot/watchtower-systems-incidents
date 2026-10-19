@@ -257,3 +257,20 @@ def test_live_routes_return_503_when_hub_is_down(live_client):
     assert client.get("/api/cameras/cam/frame", headers=headers).status_code == 503
     cameras = client.get("/api/cameras", headers=headers)
     assert cameras.status_code == 200 and cameras.json()[0]["status"] is None
+
+
+def test_live_events_end_cleanly_when_hub_fails_mid_stream(live_client):
+    client, hub, headers = live_client
+
+    class Failing:
+        def get(self, timeout):
+            raise ConnectionError("redis down")
+
+        def close(self):
+            self.closed = True
+
+    failing = Failing()
+    hub.subscribe = lambda: failing
+    with client.stream("GET", "/api/live/events", headers=headers) as response:
+        assert list(response.iter_lines()) == [": connected", ""]
+    assert failing.closed

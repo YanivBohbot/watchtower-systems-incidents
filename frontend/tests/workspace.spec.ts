@@ -28,8 +28,6 @@ test("login, empty workspace, document upload and logout through the real API", 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/workspace.png", fullPage: true });
   await page.getByRole("button", { name: "Sign out" }).click();
-  await expect(
-    page.getByRole("button", { name: "Sign in" }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   expect(errors).toEqual([]);
 });

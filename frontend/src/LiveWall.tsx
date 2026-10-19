@@ -115,8 +115,25 @@ export default function LiveWall({ token }: { token: string }) {
   const alerts = useQuery({
     queryKey: ["alerts", token],
     queryFn: () => request<Alert[]>("/alerts?limit=20", token),
+    refetchInterval: 10000, // fallback when the event stream is down
   });
   const [active, setActive] = useState<Alert[]>([]);
+  const [seen, setSeen] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    if (!alerts.data) return;
+    if (seen === null) {
+      // Alerts that existed when the wall opened stay in the list, not the banner.
+      setSeen(new Set(alerts.data.map((a) => a.id)));
+      return;
+    }
+    const fresh = alerts.data.filter((a) => !seen.has(a.id));
+    if (!fresh.length) return;
+    setSeen(new Set([...seen, ...fresh.map((a) => a.id)]));
+    setActive((list) => [
+      ...fresh.filter((a) => !list.some((b) => b.id === a.id)),
+      ...list,
+    ]);
+  }, [alerts.data, seen]);
   const [open, setOpen] = useState("");
   const [connected, setConnected] = useState(false);
   useEffect(
@@ -125,6 +142,7 @@ export default function LiveWall({ token }: { token: string }) {
         token,
         (event) => {
           if (event.type !== "alert") return;
+          setSeen((ids) => (ids ? new Set([...ids, event.alert.id]) : ids));
           setActive((list) => [
             event.alert,
             ...list.filter((a) => a.id !== event.alert.id),
@@ -133,9 +151,10 @@ export default function LiveWall({ token }: { token: string }) {
         },
         () => {
           setConnected(true);
-          // Anything raised while disconnected shows up in the list again.
+          // Anything raised while disconnected reaches the banner through the list.
           void queryClient.invalidateQueries({ queryKey: ["alerts"] });
         },
+        () => setConnected(false),
       ),
     [token, queryClient],
   );

@@ -27,11 +27,14 @@ class Clock:
 
 class Detector:
     def __init__(self, objects=((1, 0.2, 0.2, 0.4, 0.8, 0.95),)):
-        self.objects, self.calls = objects, 0
+        self.objects, self.calls, self.resets = objects, 0, 0
 
     def track(self, frame):
         self.calls += 1
         return [TrackedObject(*o) for o in self.objects]
+
+    def reset(self):
+        self.resets += 1
 
 
 def write_clip(path, frames, fps=10):
@@ -122,15 +125,58 @@ def test_late_analysis_skips_frames_instead_of_queueing(live, tmp_path):
     assert cam.position >= 30  # the source advanced with wall-clock time
 
 
-def test_loop_restart_rebuilds_detector_and_rule(live, tmp_path):
+def test_loop_restart_resets_tracker_and_rule_without_reloading_model(live, tmp_path):
     clock = Clock(0.25)
     detectors = []
     cam = runner(live, write_clip(tmp_path / "c.avi", 20), clock, detectors=detectors)
     for _ in range(20):  # five seconds of a two-second clip
         cam.step()
         clock.tick()
-    assert len(detectors) >= 2
+    assert len(detectors) == 1  # weights are loaded once per camera
+    assert detectors[0].resets >= 2
     assert len(alerts(live[0])) >= 2  # the recycled track ID alerts again after the loop
+
+
+def test_slow_analysis_still_raises_dwell_alert(live, tmp_path):
+    clock = Clock(1.5)  # each step takes longer than the nominal analysis budget
+    cam = runner(live, write_clip(tmp_path / "c.avi", 100), clock)
+    for _ in range(4):
+        cam.step()
+        clock.tick()
+    assert len(alerts(live[0])) == 1
+
+
+class BrokenHub:
+    def __getattr__(self, name):
+        def fail(*args, **kwargs):
+            raise ConnectionError("redis down")
+
+        return fail
+
+
+def test_hub_outage_never_kills_the_camera_thread(live, tmp_path):
+    import threading
+
+    sessions, storage, _ = live
+    cam = CameraRunner(
+        "cam",
+        ZONE,
+        lambda: LoopedVideoSource(write_clip(tmp_path / "c.avi", 30)),
+        Detector,
+        BrokenHub(),
+        sessions,
+        storage,
+        clock=Clock(0.2),
+        analysis_fps=5,
+    )
+    assert cam.step() is False  # no exception escapes
+    stop = threading.Event()
+    thread = threading.Thread(target=cam.run, args=(stop, 0.01))
+    thread.start()
+    thread.join(timeout=0.3)
+    assert thread.is_alive()  # still retrying
+    stop.set()
+    thread.join(timeout=5)
 
 
 def test_camera_without_zone_streams_but_never_alerts(live, tmp_path):

@@ -29,3 +29,24 @@ test("camera wall shows the live tile and a pushed alert without reloading", asy
   await expect(banner).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("alerts still reach the banner when the event stream is down", async ({
+  page,
+  request,
+}) => {
+  await page.route("**/api/live/events", (route) => route.abort());
+  await page.goto("/");
+  await page.getByLabel("Email address").fill("ui@test.local");
+  await page.getByLabel("Password").fill("browser-password-123");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByAltText("Live view of hall")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByText("LIVE", { exact: true })).toHaveCount(0);
+  const before = await page.locator(".alert-banner").count();
+  expect(before).toBe(0);
+  await request.post("/api/test/alert");
+  await expect(page.locator(".alert-banner")).toContainText("Alert · hall", {
+    timeout: 20_000,
+  });
+});
