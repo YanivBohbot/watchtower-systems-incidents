@@ -55,6 +55,23 @@ OPERATIONS.md.
 | PostgreSQL checkpointer | **Not run** | `test_postgres_checkpointer_round_trip` is skipped without `WATCHTOWER_TEST_POSTGRES_URL` |
 | Docker image with the updated lock | **Not run** | `langgraph-checkpoint-postgres==3.2.0` resolved with uv for Linux/Python 3.12 only |
 
+## Milestone 2 (live cameras) — October 20, 2026
+
+| Check | Result | Actual scope |
+|---|---|---|
+| Python suite `pytest -q` (Python 3.12, Windows) | **49 passed, 2 skipped** | Adds site seeding, camera runner pacing, loop restart, source errors, live API routes, SSE stream, 503 when the hub is down |
+| Ruff | **Passed** | `ruff check app tests migrations` |
+| Alembic migration `0003` | **Passed on SQLite** | Schema comparison test; not run against PostgreSQL |
+| React build `npm run build` | **Passed** | TypeScript check and Vite bundle |
+| Playwright | **2 scenarios passed** | Chromium, real test FastAPI server with an in-memory hub: camera wall, alert pushed over SSE without reload, dismiss; existing workspace scenario |
+| Camera runner with real video decoding | **Passed** | Generated MJPG clips decoded by OpenCV; the detector is a deterministic double |
+| Redis hub | **Not run** | `test_redis_hub_round_trip` is skipped without `WATCHTOWER_TEST_REDIS_URL` |
+| Real YOLO on a live camera, `python -m app.live` | **Not run** | No end-to-end run with real footage, Redis and the browser together |
+| Docker image and `cameras` service | **Not run** | Docker is not installed in the working environment |
+
+Live detection is people only in this milestone. No latency or accuracy figure is
+claimed yet; measurements are planned for milestone 8.
+
 ## Reproducing the checks
 
 ```bash

@@ -9,9 +9,10 @@
 | `worker` | Celery, `processing` queue, concurrency 1 | SQL jobs and files |
 | `investigator` | Celery, `investigation` queue, concurrency 1 | PostgreSQL checkpoints, tickets and SQL |
 | `scheduler` | Celery Beat, outbox sweep every 30 seconds | Schedule file |
+| `cameras` | `python -m app.live`, one thread per enabled camera | Alerts in SQL, snapshots in files |
 | `migrate` | Alembic, single run | PostgreSQL schema |
 | `postgres` | Business data | `postgres-data` volume |
-| `redis` | Task broker | SQL jobs remain the durable source |
+| `redis` | Task broker and live hub (latest frames, camera status, alert events) | SQL jobs and alerts remain the durable source |
 | `qdrant` | Vector index | `qdrant-data` volume |
 
 The backend services mount the `app-data` volume. It holds the media, the
@@ -44,6 +45,11 @@ Protected routes expect `Authorization: Bearer <token>`.
 | `POST /api/investigations/{id}/review` | JSON approved/create_ticket | Decision, then resume job |
 | `GET /api/jobs` | Token | The 100 most recent jobs |
 | `POST /api/jobs/{id}/retry` | Operator token | Retry a failed job |
+| `GET /api/cameras` | Token | Cameras with live status (`null` while Redis is down) |
+| `GET /api/cameras/{id}/frame` | Token | Latest annotated JPEG; 404 if none, 503 if Redis is down |
+| `GET /api/alerts?limit=50` | Token | Most recent alerts first |
+| `GET /api/alerts/{id}/snapshot` | Token | JPEG captured when the alert was raised |
+| `GET /api/live/events` | Token | Server-Sent Events: `alert` events, comment heartbeat every 15 s |
 
 Zone example:
 
@@ -58,6 +64,29 @@ Review example:
 ```
 
 The OpenAPI documentation is available at `/api/docs`.
+
+## Live cameras
+
+Sites and cameras come from a JSON seed file: `python -m app.cli seed-site FILE`
+creates or updates them by name, so it can be re-run safely. A relative `source`
+resolves under `CAMERAS_DIR` (default `DATA_DIR/cameras`). The camera process
+reads the cameras at startup; restart it after seeding.
+
+Each camera thread reads its video at the file's frame rate and analyzes at most
+`LIVE_ANALYSIS_FPS` frames per second (default 5). When analysis falls behind,
+frames are skipped, never queued, so latency stays bounded. At the end of the
+video it loops, and the tracker and dwell rule restart with it. A missing or
+unreadable file puts that camera in `error` and is retried every 5 seconds;
+the other cameras keep running.
+
+Redis keys: `watchtower:frame:<camera>` (latest JPEG, 10 s expiry, so a stopped
+camera goes blank), `watchtower:status:<camera>` (JSON, 60 s expiry) and the
+`watchtower:alerts` publish/subscribe channel. Alerts and their snapshots are
+written to SQL and files before the event is published, so an alert missed
+during a disconnection still appears in `GET /api/alerts`; the UI reloads that
+list each time its event stream reconnects.
+
+Nginx proxies `/api/live/` without buffering and with a one-hour read timeout.
 
 ## States and consistency
 

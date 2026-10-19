@@ -1,6 +1,7 @@
 # WatchTower
 
-Full-stack platform for analyzing uploaded videos and running assisted investigations.
+Full-stack platform for watching live cameras, analyzing uploaded videos and running
+assisted investigations.
 English interface, FastAPI, React/TypeScript, YOLO, RAG, LangChain/LangGraph and MCP.
 
 **A working portfolio version, not a certified surveillance platform.**
@@ -13,6 +14,7 @@ calls and the detector with deterministic ports. Read
 - [Code and architecture guide, file by file](docs/GUIDE.md)
 - [Infrastructure, HTTP contracts and operations](docs/OPERATIONS.md)
 - [V1 specification](docs/superpowers/specs/2026-10-18-watchtower.md)
+- [Live alerting design](docs/superpowers/specs/2026-10-19-live-dangerous-object-alerting-design.md)
 - [Checks actually performed and limitations](docs/VERIFICATION.md)
 
 ## Getting started with Docker Compose
@@ -58,6 +60,25 @@ The maximum duration of a job is also capped.
 7. Read the report, its references and its limitations. Approve with or without
    a ticket, or reject. The ticket is created by the workflow after approval,
    never directly by the agent.
+
+## Live cameras
+
+A "camera" is a recorded video replayed in a loop at real-time speed. Put your
+own short MP4 files (never committed) in the `app-data` volume under `cameras/`,
+named as in `examples/site-horizon.json` (a fictional site), then load the site
+and restart the camera process:
+
+```bash
+docker compose cp hall.mp4 cameras:/data/cameras/hall.mp4
+docker compose exec api python -m app.cli seed-site /project/examples/site-horizon.json
+docker compose restart cameras
+```
+
+The **Live cameras** tab shows every camera on a wall of tiles. When a person
+stays in a camera's zone longer than its threshold, the tile turns red and an
+alert banner appears without reloading the page. In this milestone, detection is
+people only; dangerous objects, VLM verification and the Confirm/False alarm
+decision come next (see the design).
 
 A video that does not satisfy the rule can legitimately produce zero events.
 The system does not recognize a person's identity or intent.
@@ -123,7 +144,9 @@ environment's Python if `python` is not already that interpreter, then run
 ## Known limitations
 
 - A single shared workspace: roles apply to the whole organization.
-- Uploaded videos and one rectangular zone per video; no live camera.
+- Live cameras are looped video files, not RTSP hardware. Detection runs on CPU at
+  about 5 analyzed frames per second per camera; tiles show near-live snapshots
+  (two per second), not video streaming. Live detection is people only.
 - Person detection with YOLO COCO and ByteTrack; IDs can be lost during
   occlusion. A new track can generate a new event.
 - Text PDF/TXT documents; no OCR. Documents are immutable and deduplicated by
@@ -132,7 +155,8 @@ environment's Python if `python` is not already that interpreter, then run
   replacement, but the S3 adapter is not included in this V1.
 - The LLM receives structured observations and links to the evidence, not the
   pixels of the capture. Multimodal analysis with a VLM is a separate extension.
-- The UI refreshes by polling, not SSE/WebSocket.
+- Live alerts are pushed with Server-Sent Events; the other lists still refresh by
+  polling.
 - No SSO, multi-tenancy, public TLS, autoscaling or external monitoring configured.
 
 The documentation explains possible extensions; it does not present them as
