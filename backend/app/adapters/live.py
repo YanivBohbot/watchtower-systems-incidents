@@ -1,5 +1,6 @@
 """Live hub adapters: latest frame and status per camera, plus an alert event channel."""
 
+import json
 import queue
 import threading
 import time
@@ -56,3 +57,47 @@ class MemoryHub:
         with self.lock:
             self.subscribers.add(subscription)
         return subscription
+
+
+class RedisSubscription:
+    def __init__(self, pubsub):
+        self.pubsub = pubsub
+
+    def get(self, timeout: float) -> dict | None:
+        message = self.pubsub.get_message(ignore_subscribe_messages=True, timeout=timeout)
+        return json.loads(message["data"]) if message else None
+
+    def close(self) -> None:
+        self.pubsub.close()
+
+
+class RedisHub:
+    """Shared between the camera process and the API; frames expire so a dead camera goes blank."""
+
+    CHANNEL = "watchtower:alerts"
+
+    def __init__(self, url: str, frame_ttl: int = 10):
+        import redis
+
+        self.redis, self.frame_ttl = redis.Redis.from_url(url, socket_timeout=5), frame_ttl
+
+    def put_frame(self, camera_id: str, jpeg: bytes) -> None:
+        self.redis.set(f"watchtower:frame:{camera_id}", jpeg, ex=self.frame_ttl)
+
+    def get_frame(self, camera_id: str) -> bytes | None:
+        return self.redis.get(f"watchtower:frame:{camera_id}")
+
+    def put_status(self, camera_id: str, status: dict) -> None:
+        self.redis.set(f"watchtower:status:{camera_id}", json.dumps(status), ex=self.frame_ttl * 6)
+
+    def get_status(self, camera_id: str) -> dict | None:
+        value = self.redis.get(f"watchtower:status:{camera_id}")
+        return json.loads(value) if value else None
+
+    def publish(self, event: dict) -> None:
+        self.redis.publish(self.CHANNEL, json.dumps(event))
+
+    def subscribe(self) -> RedisSubscription:
+        pubsub = self.redis.pubsub()
+        pubsub.subscribe(self.CHANNEL)
+        return RedisSubscription(pubsub)

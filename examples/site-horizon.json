@@ -2,11 +2,11 @@
   "name": "Horizon Cultural Center (fictional)",
   "fictional": true,
   "cameras": [
-    {"name": "hall", "source": "/data/cameras/hall.mp4", "labels": ["hall", "entrance"],
+    {"name": "hall", "source": "hall.mp4", "labels": ["hall", "entrance"],
      "zone": {"x1": 0.3, "y1": 0.4, "x2": 0.7, "y2": 1.0, "dwell_seconds": 5}},
-    {"name": "reception", "source": "/data/cameras/reception.mp4", "labels": ["reception"]},
-    {"name": "corridor", "source": "/data/cameras/corridor.mp4", "labels": ["corridor"]},
-    {"name": "parking", "source": "/data/cameras/parking.mp4", "labels": ["parking", "outdoor"], "enabled": false},
-    {"name": "kitchen", "source": "/data/cameras/kitchen.mp4", "labels": ["cafeteria kitchen"], "enabled": false}
+    {"name": "reception", "source": "reception.mp4", "labels": ["reception"]},
+    {"name": "corridor", "source": "corridor.mp4", "labels": ["corridor"]},
+    {"name": "parking", "source": "parking.mp4", "labels": ["parking", "outdoor"], "enabled": false},
+    {"name": "kitchen", "source": "kitchen.mp4", "labels": ["cafeteria kitchen"], "enabled": false}
   ]
 }

@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import pytest
@@ -160,3 +161,29 @@ def test_memory_hub_frame_expires():
     assert hub.get_frame("cam") == b"jpeg"
     clock.value = 11
     assert hub.get_frame("cam") is None
+
+
+def test_build_runners_only_for_enabled_cameras(live, tmp_path):
+    from app.live import build_runners
+
+    sessions, storage, hub = live
+    with sessions() as db:
+        db.add(Camera(id="off", site_id="s", name="parking", source="y", labels=[], enabled=False))
+        db.commit()
+    runners = build_runners(sessions, storage, hub, Detector, analysis_fps=5)
+    assert [r.camera_id for r in runners] == ["cam"]
+
+
+@pytest.mark.skipif(not os.environ.get("WATCHTOWER_TEST_REDIS_URL"), reason="needs Redis")
+def test_redis_hub_round_trip():
+    from app.adapters.live import RedisHub
+
+    hub = RedisHub(os.environ["WATCHTOWER_TEST_REDIS_URL"])
+    events = hub.subscribe()
+    hub.put_frame("cam-test", b"jpeg")
+    hub.put_status("cam-test", {"state": "live", "frames_analyzed": 3})
+    hub.publish({"type": "alert", "alert": {"id": "a"}})
+    assert hub.get_frame("cam-test") == b"jpeg"
+    assert hub.get_status("cam-test")["frames_analyzed"] == 3
+    assert events.get(timeout=2)["alert"]["id"] == "a"
+    events.close()

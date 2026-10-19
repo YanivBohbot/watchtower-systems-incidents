@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     cors_origin: str = "http://localhost:5173"
     mcp_server_path: Path = Path("../mcp_server/server.py")
     skill_path: Path = Path("../skills/investigate/SKILL.md")
+    live_analysis_fps: float = Field(default=5, gt=0, le=30)
+    cameras_dir: Path | None = None  # relative camera sources resolve here; default data_dir/cameras
 
 
 @lru_cache
