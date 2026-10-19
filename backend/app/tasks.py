@@ -35,21 +35,25 @@ def run_job(job_id):
 
     engine, sessions = make_sessions(cfg.database_url)
     try:
+        claimed_at = now()
         with sessions() as db:
             claimed = db.execute(
                 update(Job)
                 .where(Job.id == job_id, Job.status == "queued")
-                .values(status="running", error=None, started_at=now(), attempts=Job.attempts + 1)
+                .values(status="running", error=None, started_at=claimed_at, attempts=Job.attempts + 1)
             )
             db.commit()
             if claimed.rowcount != 1:
                 return
             job = db.get(Job, job_id)
             kind, resource_id = job.kind, job.resource_id
+        # Writes only apply while this claim still owns the row: once the sweep has
+        # requeued the job and another worker claimed it, a late worker changes nothing.
+        owned = (Job.id == job_id, Job.status == "running", Job.started_at == claimed_at)
 
         def progress(percent):
             with sessions() as db:
-                db.execute(update(Job).where(Job.id == job_id).values(progress=percent))
+                db.execute(update(Job).where(*owned).values(progress=percent))
                 db.commit()
 
         try:
@@ -59,13 +63,13 @@ def run_job(job_id):
             with sessions() as db:
                 db.execute(
                     update(Job)
-                    .where(Job.id == job_id)
+                    .where(*owned)
                     .values(status="failed", error=f"{type(error).__name__}: check the worker logs.")
                 )
                 db.commit()
         else:
             with sessions() as db:
-                db.execute(update(Job).where(Job.id == job_id).values(status="completed", progress=100))
+                db.execute(update(Job).where(*owned).values(status="completed", progress=100))
                 db.commit()
     finally:
         engine.dispose()

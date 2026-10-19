@@ -10,7 +10,7 @@ from app.auth import hash_password
 from app.auth import token_for
 from app.adapters.storage import LocalStorage
 from app.config import Settings
-from app.db import Base, User, make_sessions
+from app.db import Base, Job, User, make_sessions
 
 
 @pytest.fixture
@@ -143,3 +143,16 @@ def test_oversized_upload_leaves_no_temp_file(tmp_path):
         assert response.status_code == 413
         assert queued == []
     assert list((tmp_path / "uploads").glob("*")) == []
+
+
+def test_retry_resets_attempts(app_client):
+    client, queued = app_client
+    sessions = client.app.state.sessions
+    with sessions() as db:
+        db.add(Job(id="failed-job", kind="video", resource_id="v", status="failed", attempts=2, error="boom"))
+        db.commit()
+    assert client.post("/api/jobs/failed-job/retry", headers=login(client)).status_code == 200
+    with sessions() as db:
+        row = db.get(Job, "failed-job")
+        assert row.attempts == 0
+        assert row.started_at is None

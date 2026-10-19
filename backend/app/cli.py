@@ -29,7 +29,9 @@ def main():
             db.add(User(email=args.email.lower(), role=args.role, password_hash=hash_password(password)))
         else:
             changed = db.execute(
-                update(Job).where(Job.id == args.job_id, Job.status == "running").values(status="queued", error=None)
+                update(Job)
+                .where(Job.id == args.job_id, Job.status == "running")
+                .values(status="queued", error=None, attempts=0, started_at=None)
             )
             if changed.rowcount != 1:
                 raise SystemExit("No running job found")

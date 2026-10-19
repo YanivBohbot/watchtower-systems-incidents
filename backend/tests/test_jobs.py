@@ -127,3 +127,38 @@ def test_worker_claims_once_and_records_failure_without_exposing_details(tmp_pat
         assert "internal-detail" not in rows["bad"].error
     assert calls == ["v", "bad"]
     settings.cache_clear()
+
+
+def test_late_worker_does_not_overwrite_a_reclaimed_job(job_db, monkeypatch):
+    tasks, sessions = job_db
+    from app import runtime
+
+    def execute(kind, resource_id, progress):
+        # While this worker is stuck, the sweep requeues the job and another worker claims it.
+        with sessions() as db:
+            row = db.get(Job, "slow")
+            row.status, row.started_at, row.attempts = "running", NOW, 2
+            db.commit()
+        progress(50)
+
+    monkeypatch.setattr(runtime, "execute", execute)
+    with sessions() as db:
+        db.add(Job(id="slow", kind="video", resource_id="v"))
+        db.commit()
+    tasks.run_job.run("slow")
+    row = job(sessions, "slow")
+    assert row.status == "running"
+    assert row.progress == 0
+
+
+def test_recover_job_cli_resets_attempts(job_db, monkeypatch):
+    _, sessions = job_db
+    add_running_job(sessions, "stuck", started_ago_seconds=10, attempts=2)
+    from app import cli
+
+    monkeypatch.setattr("sys.argv", ["cli", "recover-job", "stuck"])
+    cli.main()
+    row = job(sessions, "stuck")
+    assert row.status == "queued"
+    assert row.attempts == 0
+    assert row.started_at is None

@@ -186,7 +186,7 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
             result = db.execute(
                 update(Job)
                 .where(Job.id == job_id, Job.status == "failed")
-                .values(status="queued", error=None, progress=0)
+                .values(status="queued", error=None, progress=0, attempts=0, started_at=None)
             )
             if result.rowcount != 1:
                 raise HTTPException(409, "Only failed jobs may be retried")
