@@ -45,6 +45,16 @@ concurrent approval, MCP idempotency, media and startup. The two concrete issues
 it reported were fixed. Operational limits remain described in the README and
 OPERATIONS.md.
 
+## Milestone 1 (consolidation) — October 19, 2026
+
+| Check | Result | Actual scope |
+|---|---|---|
+| Python suite `pytest -q` (Python 3.12, Windows) | **31 passed, 1 skipped** | Adds job lease recovery, late-worker protection, attempts reset, checkpoint factory, streamed uploads and Range responses |
+| Ruff | **Passed** | `ruff check app tests migrations` |
+| Alembic migration `0002` | **Passed on SQLite** | Schema comparison test; not run against PostgreSQL |
+| PostgreSQL checkpointer | **Not run** | `test_postgres_checkpointer_round_trip` is skipped without `WATCHTOWER_TEST_POSTGRES_URL` |
+| Docker image with the updated lock | **Not run** | `langgraph-checkpoint-postgres==3.2.0` resolved with uv for Linux/Python 3.12 only |
+
 ## Reproducing the checks
 
 ```bash
