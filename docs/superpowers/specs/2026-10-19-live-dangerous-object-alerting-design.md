@@ -41,13 +41,15 @@ look at the evidence, confirm or reject, and follow the site's procedure.
    Providers) looks at the relevant frames and confirms or rejects.
 4. **Immediate alert.** As soon as the VLM confirms, the alert reaches the operator.
    The alert never waits for the agent's analysis.
-5. **Operator screen (layout "C", chosen by the user).** The alerting camera is
-   shown large and live with the detection box drawn; small tiles show the other
-   cameras; a side panel shows the alert (object, score, VLM description) and the
-   site's procedure step by step, with **Confirm** and **False alarm** buttons.
+5. **Operator screen (layout "A", camera wall, chosen by the user).** All cameras
+   stay visible in a grid of equal tiles. The alerting camera's tile gets a red
+   outline with the detection box drawn; a red alert banner under the grid shows
+   the camera, object, score, VLM description and time, with **View clip**,
+   **Confirm** and **False alarm** buttons.
 6. **Agent context.** In parallel with the alert, a LangChain agent retrieves the
    site's procedure (text RAG) and similar past alerts (multimodal RAG) and fills
-   the side panel.
+   an expandable details area of the alert banner (designer's call: layout A has
+   no side panel, so the context lives in the banner).
 7. **Human decision.** The operator confirms or rejects. Nothing external happens
    without that decision. On confirmation, the procedure's follow-up runs (for
    example, a ticket through the existing MCP ticket server).
@@ -129,7 +131,7 @@ look at the evidence, confirm or reject, and follow the site's procedure.
 ## Decisions made with the user
 
 - Evolve WatchTower rather than start a new project.
-- Operator screen layout C.
+- Operator screen layout A (camera wall; replaces the earlier choice of layout C).
 - First-version triggers: firearm, knife, other dangerous objects.
 - Qdrant stays.
 - Multimodal RAG = procedures + alert memory + history search; no person
@@ -186,7 +188,7 @@ look at the evidence, confirm or reject, and follow the site's procedure.
 ## Left to the builder
 
 Exact libraries and versions, database schema, thresholds (confidence, number of
-frames), analysis rate, crop sizes, UI details beyond layout C, the choice
+frames), analysis rate, crop sizes, UI details beyond layout A, the choice
 between WebSocket and SSE, Qwen-VL model size and provider, the weapon dataset,
 and how test clips are labeled.
 
