@@ -1,12 +1,18 @@
 """SQL-backed outbox + atomic claim: queue delivery may happen more than once."""
 
 import logging
+from datetime import datetime, timedelta, timezone
 
 from celery import Celery
 from sqlalchemy import select, update
 
 from app.config import settings
-from app.db import Job, make_sessions
+from app.db import Job, make_sessions, now
+
+# A live worker cannot hold a job past run_job's hard time_limit (960 s), so a job
+# still "running" after this lease belongs to a worker that died.
+JOB_LEASE_SECONDS = 1200
+MAX_JOB_ATTEMPTS = 3
 
 cfg = settings()
 celery = Celery("watchtower", broker=cfg.redis_url)
@@ -31,7 +37,9 @@ def run_job(job_id):
     try:
         with sessions() as db:
             claimed = db.execute(
-                update(Job).where(Job.id == job_id, Job.status == "queued").values(status="running", error=None)
+                update(Job)
+                .where(Job.id == job_id, Job.status == "queued")
+                .values(status="running", error=None, started_at=now(), attempts=Job.attempts + 1)
             )
             db.commit()
             if claimed.rowcount != 1:
@@ -63,10 +71,39 @@ def run_job(job_id):
         engine.dispose()
 
 
+def recover_stale_jobs(sessions, current: datetime) -> list[str]:
+    """Requeue jobs whose worker died; fail those that keep killing workers."""
+    cutoff = current - timedelta(seconds=JOB_LEASE_SECONDS)
+    requeued = []
+    with sessions() as db:
+        stale = list(db.scalars(select(Job).where(Job.status == "running", Job.started_at.is_not(None))))
+        for job in stale:
+            started = job.started_at if job.started_at.tzinfo else job.started_at.replace(tzinfo=timezone.utc)
+            if started >= cutoff:
+                continue
+            values = (
+                {"status": "failed", "error": "Worker stopped repeatedly; check the worker logs."}
+                if job.attempts >= MAX_JOB_ATTEMPTS
+                else {"status": "queued", "started_at": None}
+            )
+            # Repeat the observed state so a concurrent claim or recovery wins and this one is skipped.
+            changed = db.execute(
+                update(Job)
+                .where(Job.id == job.id, Job.status == "running", Job.started_at == job.started_at)
+                .values(**values)
+            )
+            if changed.rowcount == 1 and values["status"] == "queued":
+                requeued.append(job.id)
+        db.commit()
+    return requeued
+
+
 @celery.task(name="watchtower.sweep")
 def sweep():
     engine, sessions = make_sessions(cfg.database_url)
     try:
+        for job_id in recover_stale_jobs(sessions, now()):
+            log.warning("Requeued job left running by a stopped worker: %s", job_id)
         with sessions() as db:
             jobs = list(db.scalars(select(Job).where(Job.status == "queued").limit(100)))
         for job in jobs:

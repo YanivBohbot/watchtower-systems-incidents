@@ -99,9 +99,9 @@ A role change therefore takes effect on the following requests.
 ### `backend/app/cli.py`
 
 `create-user` prompts for the password with `getpass` and creates a user without
-exposing a public sign-up route. `recover-job` resets a stuck job to `queued`.
-Use it only after confirming that the old worker has stopped; it is not a
-distributed lease mechanism.
+exposing a public sign-up route. `recover-job` resets a stuck job to `queued`
+immediately, instead of waiting for the automatic lease recovery (section 9).
+Use it only after confirming that the old worker has stopped.
 
 ### `backend/migrations/`
 
@@ -319,10 +319,14 @@ process that changes the row runs it; other deliveries return. Processing then
 moves to `completed` or `failed`, with logs correlated to the ID. The public
 error message stays short; details are in the logs.
 
-`sweep()` periodically republishes jobs still `queued`. The `processing` queue
-handles video and documents; `investigation` handles the agent and the human
-resume. A hard process crash can leave a job `running`: the recovery command is
-then required. There is no exactly-once execution guarantee.
+The claim also records `started_at` and increments `attempts`. `sweep()` first
+calls `recover_stale_jobs()`: a job still `running` after `JOB_LEASE_SECONDS`
+(1200 s, longer than the 960 s hard time limit, so its worker must be dead) is
+requeued, or marked `failed` once it reaches `MAX_JOB_ATTEMPTS` (3). Each change
+is a conditional update, so a concurrent claim wins. `sweep()` then republishes
+jobs still `queued`. The `processing` queue handles video and documents;
+`investigation` handles the agent and the human resume. There is no
+exactly-once execution guarantee.
 
 ## 10. The frontend, file by file
 

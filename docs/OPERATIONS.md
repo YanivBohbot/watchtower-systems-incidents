@@ -63,7 +63,10 @@ The OpenAPI documentation is available at `/api/docs`.
 
 A job goes `queued → running → completed` or `failed`. The atomic claim prevents
 two deliveries of the same job from running it at the same time. The SQL sweep
-repairs a missing publication to Redis, not a hard crash during execution.
+repairs a missing publication to Redis. It also recovers hard crashes: a job
+still `running` 20 minutes after it was claimed (longer than the 16-minute hard
+time limit of a live worker) is requeued, and after 3 attempts it is marked
+`failed` so a job that keeps killing workers does not loop forever.
 
 An investigation moves from `queued` to `awaiting_review`, then `review_queued`,
 and finally `approved` or `rejected`. The job status shows any intermediate
@@ -94,8 +97,9 @@ the API quota and the MCP process logs. An invented reference makes the report
 fail instead of being silently accepted as a citation.
 
 A `failed` job can be retried from the UI. A job left `running` after a hard
-crash needs manual action: confirm that its old worker has stopped, then run the
-recovery command and let the scheduler republish it.
+crash is requeued automatically by the scheduler after 20 minutes. To recover it
+sooner, confirm that its old worker has stopped, then run the recovery command
+and let the scheduler republish it.
 
 ```bash
 docker compose exec api python -m app.cli recover-job JOB_ID
