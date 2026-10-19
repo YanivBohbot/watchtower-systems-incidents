@@ -9,9 +9,9 @@ from pathlib import Path
 from uuid import uuid4
 
 import jwt
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select, update
@@ -20,7 +20,7 @@ from sqlalchemy.exc import IntegrityError
 from app.adapters.storage import LocalStorage
 from app.auth import token_for, verify_password
 from app.config import Settings
-from app.db import Document, Incident, Investigation, Job, User, Video, make_sessions, uid
+from app.db import Alert, Camera, Document, Incident, Investigation, Job, Site, User, Video, make_sessions, uid
 from app.domain.rules import Zone
 
 log = logging.getLogger(__name__)
@@ -40,13 +40,17 @@ def public(row):
     return {
         column.name: getattr(row, column.name)
         for column in row.__table__.columns
-        if column.name not in ("password_hash", "storage_key", "evidence_key")
+        if column.name not in ("password_hash", "storage_key", "evidence_key", "snapshot_key", "source")
     }
 
 
-def create_app(cfg: Settings, sessions=None, dispatcher=None):
+def create_app(cfg: Settings, sessions=None, dispatcher=None, hub=None):
     if sessions is None:
         _, sessions = make_sessions(cfg.database_url)
+    if hub is None:
+        from app.adapters.live import RedisHub
+
+        hub = RedisHub(cfg.redis_url)  # connects lazily; live routes answer 503 while Redis is down
     storage = LocalStorage(cfg.data_dir / "files")
 
     @asynccontextmanager
@@ -275,5 +279,73 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
             db.commit()
         enqueue(job.id)
         return {"status": "review_queued"}
+
+    def live(call, *args):
+        try:
+            return call(*args)
+        except Exception:
+            log.warning("Live hub unavailable", exc_info=True)
+            raise HTTPException(503, "Live service unavailable") from None
+
+    @app.get("/api/cameras")
+    def cameras(user=Depends(current)):
+        with sessions() as db:
+            rows = db.execute(select(Camera, Site.name).join(Site).order_by(Site.name, Camera.name)).all()
+            result = [{**public(camera), "site": site} for camera, site in rows]
+        for camera in result:
+            try:
+                camera["status"] = hub.get_status(camera["id"])
+            except Exception:
+                log.warning("Live hub unavailable", exc_info=True)
+                camera["status"] = None
+        return result
+
+    @app.get("/api/cameras/{camera_id}/frame")
+    def camera_frame(camera_id: str, user=Depends(current)):
+        frame = live(hub.get_frame, camera_id)
+        if frame is None:
+            raise HTTPException(404, "No recent frame")
+        return Response(frame, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/alerts")
+    def alerts(limit: int = Query(50, ge=1, le=200), user=Depends(current)):
+        with sessions() as db:
+            rows = db.scalars(select(Alert).order_by(Alert.created_at.desc()).limit(limit))
+            return [public(a) for a in rows]
+
+    @app.get("/api/alerts/{alert_id}/snapshot")
+    def alert_snapshot(alert_id: str, user=Depends(current)):
+        with sessions() as db:
+            alert = db.get(Alert, alert_id)
+            if alert is None:
+                raise HTTPException(404, "Alert not found")
+            key = alert.snapshot_key
+        return Response(storage.read(key), media_type="image/jpeg")
+
+    @app.get("/api/live/events")
+    def live_events(user=Depends(current)):
+        subscription = live(hub.subscribe)
+
+        def stream():
+            # Runs in a worker thread; the heartbeat lets the server notice a closed connection.
+            try:
+                yield ": connected\n\n"
+                idle = 0
+                while True:
+                    event = subscription.get(timeout=1)
+                    if event is None:
+                        idle += 1
+                        if idle >= 15:
+                            idle = 0
+                            yield ": ping\n\n"
+                        continue
+                    idle = 0
+                    yield f"event: {event['type']}\ndata: {json.dumps(event)}\n\n"
+            finally:
+                subscription.close()
+
+        return StreamingResponse(
+            stream(), media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"}
+        )
 
     return app
