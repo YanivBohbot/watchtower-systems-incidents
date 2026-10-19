@@ -52,7 +52,7 @@ def run_job(job_id):
                 db.execute(
                     update(Job)
                     .where(Job.id == job_id)
-                    .values(status="failed", error=f"{type(error).__name__}: consulter les logs du worker.")
+                    .values(status="failed", error=f"{type(error).__name__}: check the worker logs.")
                 )
                 db.commit()
         else:

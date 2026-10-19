@@ -25,9 +25,9 @@ class ScriptedModel(BaseChatModel):
         name = "Report" if observed else "get_evidence"
         args = (
             {
-                "summary": "Présence observée",
+                "summary": "Presence observed",
                 "findings": ["Trajectoire en zone A"],
-                "recommendation": "Vérifier la vidéo",
+                "recommendation": "Check the video",
                 "citation_ids": ["source-1"],
                 "limitations": ["Simulation de test"],
             }
@@ -48,7 +48,7 @@ class ScriptedModel(BaseChatModel):
 
 class Knowledge:
     def search(self, query):
-        return [{"id": "source-1", "document": "procedure.txt", "page": 1, "text": "Vérifier la vidéo."}]
+        return [{"id": "source-1", "document": "procedure.txt", "page": 1, "text": "Check the video."}]
 
 
 class Tickets:

@@ -34,16 +34,16 @@ const initialZone: Zone = {
   dwell_seconds: 3,
 };
 const labels: Record<string, string> = {
-  queued: "En attente",
-  running: "En cours",
-  completed: "Terminé",
-  failed: "Échec",
-  indexed: "Indexé",
-  indexing: "Indexation",
-  awaiting_review: "À valider",
-  approved: "Approuvé",
-  rejected: "Rejeté",
-  review_queued: "Validation en cours",
+  queued: "Queued",
+  running: "Running",
+  completed: "Completed",
+  failed: "Failed",
+  indexed: "Indexed",
+  indexing: "Indexing",
+  awaiting_review: "Awaiting review",
+  approved: "Approved",
+  rejected: "Rejected",
+  review_queued: "Review in progress",
 };
 
 function Status({ value }: { value: string }) {
@@ -83,10 +83,10 @@ function Evidence({ incident, token }: { incident: Incident; token: string }) {
       {url ? (
         <img
           src={url}
-          alt={`Capture à ${incident.seconds.toFixed(1)} secondes`}
+          alt={`Capture at ${incident.seconds.toFixed(1)} seconds`}
         />
       ) : (
-        <span>{error || "Chargement de la preuve…"}</span>
+        <span>{error || "Loading evidence…"}</span>
       )}
       <span className="timecode">{incident.seconds.toFixed(1)} s</span>
     </div>
@@ -112,15 +112,15 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
         </div>
         <span className="eyebrow">VIDEO INCIDENT INTELLIGENCE</span>
         <h1>
-          Des observations.
+          Observations.
           <br />
-          Des preuves.
+          Evidence.
           <br />
-          <em>Des décisions éclairées.</em>
+          <em>Informed decisions.</em>
         </h1>
         <p>
-          Analyse vidéo, procédures documentées et investigation assistée, dans
-          un espace de travail unique.
+          Video analysis, documented procedures and assisted investigation, in a
+          single workspace.
         </p>
       </div>
       <form
@@ -130,11 +130,11 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
           login.mutate();
         }}
       >
-        <span className="eyebrow">ESPACE OPÉRATEUR</span>
-        <h2>Bienvenue.</h2>
-        <p>Connecte-toi avec le compte créé à l’installation.</p>
+        <span className="eyebrow">OPERATOR WORKSPACE</span>
+        <h2>Welcome.</h2>
+        <p>Sign in with the account created during setup.</p>
         <label>
-          Adresse e-mail
+          Email address
           <input
             type="email"
             autoComplete="username"
@@ -144,7 +144,7 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
           />
         </label>
         <label>
-          Mot de passe
+          Password
           <input
             type="password"
             autoComplete="current-password"
@@ -159,9 +159,9 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
           </p>
         )}
         <button className="primary" disabled={login.isPending}>
-          Se connecter <ArrowRight size={16} />
+          Sign in <ArrowRight size={16} />
         </button>
-        <small>Les rapports restent soumis à une validation humaine.</small>
+        <small>Reports always require human review.</small>
       </form>
     </div>
   );
@@ -219,7 +219,7 @@ export default function App() {
   }
   const upload = useMutation({
     mutationFn: () => {
-      if (!file) throw new Error("Sélectionne une vidéo");
+      if (!file) throw new Error("Select a video");
       const body = new FormData();
       body.append("file", file);
       body.append("zone", JSON.stringify(zone));
@@ -228,7 +228,7 @@ export default function App() {
     onSuccess: (v) => {
       setSelected(v.id);
       setFile(null);
-      setNotice("Vidéo enregistrée. Le traitement est lancé en arrière-plan.");
+      setNotice("Video saved. Processing has started in the background.");
       refresh();
     },
   });
@@ -239,7 +239,7 @@ export default function App() {
       return request("/documents", token, { method: "POST", body });
     },
     onSuccess: () => {
-      setNotice("Document enregistré. Consulte son état d’indexation.");
+      setNotice("Document saved. Check its indexing status.");
       refresh();
     },
   });
@@ -251,7 +251,7 @@ export default function App() {
       }),
     onSuccess: () => {
       refresh();
-      setNotice("Demande enregistrée.");
+      setNotice("Request saved.");
     },
   });
   function connect(value: string) {
@@ -267,12 +267,13 @@ export default function App() {
   if (user.isError)
     return (
       <div className="center">
-        <h2>Connexion expirée ou serveur indisponible</h2>
+        <h2>Session expired or server unavailable</h2>
         <p>{user.error.message}</p>
-        <button onClick={logout}>Retour à la connexion</button>
+        <button onClick={logout}>Back to sign in</button>
       </div>
     );
-  if (!user.data) return <div className="center">Connexion à WatchTower…</div>;
+  if (!user.data)
+    return <div className="center">Connecting to WatchTower…</div>;
   const canWrite = user.data.role !== "viewer";
   const pending =
     jobs.data?.filter((j) => j.status === "running" || j.status === "queued")
@@ -297,19 +298,19 @@ export default function App() {
         <div className="brand">
           <Radar size={27} /> WATCHTOWER<span>INTELLIGENCE WORKSPACE</span>
         </div>
-        <div className="nav-label">VOTRE ESPACE</div>
+        <div className="nav-label">YOUR WORKSPACE</div>
         <nav>
           <button
             className={tab === "workspace" ? "active" : ""}
             onClick={() => setTab("workspace")}
           >
-            <Film size={18} /> Analyse vidéo <ChevronRight size={14} />
+            <Film size={18} /> Video analysis <ChevronRight size={14} />
           </button>
           <button
             className={tab === "knowledge" ? "active" : ""}
             onClick={() => setTab("knowledge")}
           >
-            <FileText size={18} /> Procédures
+            <FileText size={18} /> Procedures
           </button>
           <button
             className={tab === "investigations" ? "active" : ""}
@@ -321,9 +322,9 @@ export default function App() {
         </nav>
         <div className="sidebar-note">
           <ShieldCheck size={20} />
-          <strong>Vous gardez la décision.</strong>
+          <strong>You keep the final say.</strong>
           <p>
-            L’agent rassemble les éléments. Vous validez les conclusions et les
+            The agent gathers the facts. You approve the conclusions and the
             actions.
           </p>
         </div>
@@ -333,7 +334,7 @@ export default function App() {
             <strong>{user.data.email.split("@")[0]}</strong>
             <small>{user.data.role}</small>
           </div>
-          <button aria-label="Déconnexion" onClick={logout}>
+          <button aria-label="Sign out" onClick={logout}>
             <LogOut size={17} />
           </button>
         </div>
@@ -343,31 +344,31 @@ export default function App() {
           <span>
             Workspace <ChevronRight size={13} />{" "}
             {tab === "workspace"
-              ? "Analyse vidéo"
+              ? "Video analysis"
               : tab === "knowledge"
-                ? "Procédures"
+                ? "Procedures"
                 : "Investigations"}
           </span>
           <span className="environment">
-            <i /> ENVIRONNEMENT LOCAL
+            <i /> LOCAL ENVIRONMENT
           </span>
         </header>
         <div className="page-heading">
           <div>
-            <span className="eyebrow">DE L’OBSERVATION À L’ACTION</span>
+            <span className="eyebrow">FROM OBSERVATION TO ACTION</span>
             <h1>
               {tab === "workspace"
-                ? "Une vue claire sur chaque événement."
+                ? "A clear view of every event."
                 : tab === "knowledge"
-                  ? "Le contexte derrière chaque décision."
-                  : "Des conclusions que vous pouvez vérifier."}
+                  ? "The context behind every decision."
+                  : "Conclusions you can verify."}
             </h1>
             <p>
               {tab === "workspace"
-                ? "Importez une vidéo, définissez une zone et retrouvez les preuves au même endroit."
+                ? "Upload a video, define a zone and find all the evidence in one place."
                 : tab === "knowledge"
-                  ? "Les procédures indexées alimentent les investigations avec des références vérifiables."
-                  : "Examinez les observations, les sources et les limites avant de valider un rapport."}
+                  ? "Indexed procedures feed investigations with verifiable references."
+                  : "Review the observations, sources and limitations before approving a report."}
             </p>
           </div>
         </div>
@@ -379,7 +380,7 @@ export default function App() {
         {notice && (
           <div role="status" className="banner">
             {notice}
-            <button aria-label="Fermer" onClick={() => setNotice("")}>
+            <button aria-label="Close" onClick={() => setNotice("")}>
               <X size={15} />
             </button>
           </div>
@@ -387,22 +388,22 @@ export default function App() {
         <section className="stats">
           <div>
             <Film />
-            <span>Vidéos importées</span>
+            <span>Uploaded videos</span>
             <strong>{videos.data?.length || 0}</strong>
           </div>
           <div>
             <Activity />
-            <span>Événements détectés</span>
+            <span>Detected events</span>
             <strong>{incidents.data?.length || 0}</strong>
           </div>
           <div>
             <ShieldCheck />
-            <span>Rapports à valider</span>
+            <span>Reports to review</span>
             <strong>{reviews}</strong>
           </div>
           <div>
             <span className="live-dot" />
-            <span>Traitements actifs</span>
+            <span>Active jobs</span>
             <strong>{pending}</strong>
           </div>
         </section>
@@ -411,13 +412,13 @@ export default function App() {
             <section className="panel video-panel">
               <div className="panel-heading">
                 <h2>
-                  <Film size={17} /> Analyse vidéo
+                  <Film size={17} /> Video analysis
                 </h2>
-                <span className="subtle">FICHIERS IMPORTÉS</span>
+                <span className="subtle">UPLOADED FILES</span>
               </div>
               <div className="video-controls">
                 <select
-                  aria-label="Vidéo"
+                  aria-label="Video"
                   value={activeVideo?.id || ""}
                   onChange={(e) => {
                     setSelected(e.target.value);
@@ -425,7 +426,7 @@ export default function App() {
                   }}
                 >
                   <option value="" disabled>
-                    Choisir une vidéo
+                    Choose a video
                   </option>
                   {videos.data?.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -435,7 +436,7 @@ export default function App() {
                 </select>
                 {canWrite && (
                   <label className="button secondary">
-                    <Upload size={15} /> Importer
+                    <Upload size={15} /> Upload
                     <input
                       type="file"
                       accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
@@ -457,10 +458,10 @@ export default function App() {
               ) : (
                 <div className="empty-video">
                   <Radar size={46} />
-                  <h3>Votre première analyse commence ici.</h3>
+                  <h3>Your first analysis starts here.</h3>
                   <p>
                     {serverMedia.error ||
-                      "Une vidéo de 30 à 60 secondes, caméra fixe, suffit pour démarrer."}
+                      "A 30 to 60 second video from a fixed camera is enough to get started."}
                   </p>
                 </div>
               )}
@@ -475,12 +476,12 @@ export default function App() {
                   <div>
                     <strong>{file.name}</strong>
                     <span className="hint">
-                      Zone rectangulaire · point suivi : bas du cadre de
-                      détection
+                      Rectangular zone · tracked point: bottom of the detection
+                      box
                     </span>
                   </div>
                   <label>
-                    Présence minimale (s)
+                    Minimum presence (s)
                     <input
                       type="number"
                       min="0.1"
@@ -496,40 +497,39 @@ export default function App() {
                     />
                   </label>
                   <button className="primary" disabled={upload.isPending}>
-                    Lancer l’analyse <ArrowRight size={15} />
+                    Start analysis <ArrowRight size={15} />
                   </button>
                 </form>
               )}
               {!file && activeVideo && (
                 <div className="video-info">
-                  <span>Zone A · seuil {activeVideo.zone.dwell_seconds} s</span>
+                  <span>
+                    Zone A · threshold {activeVideo.zone.dwell_seconds} s
+                  </span>
                   <span>{activeVideo.name}</span>
                 </div>
               )}
             </section>
             <section className="panel events-panel">
               <div className="panel-heading">
-                <h2>Événements</h2>
+                <h2>Events</h2>
                 <span className="count">{visibleIncidents.length}</span>
               </div>
               {visibleIncidents.length === 0 ? (
                 <div className="empty">
                   <Activity size={28} />
-                  <h3>Aucun événement pour cette vidéo</h3>
-                  <p>
-                    Les événements apparaîtront ici lorsque la règle de présence
-                    sera satisfaite.
-                  </p>
+                  <h3>No events for this video</h3>
+                  <p>Events will appear here when the presence rule is met.</p>
                 </div>
               ) : (
                 visibleIncidents.map((incident) => (
                   <article className="incident" key={incident.id}>
                     <Evidence incident={incident} token={token} />
                     <div>
-                      <span className="eyebrow">PRÉSENCE EN ZONE A</span>
-                      <h3>Seuil de présence dépassé</h3>
+                      <span className="eyebrow">PRESENCE IN ZONE A</span>
+                      <h3>Presence threshold exceeded</h3>
                       <p>
-                        Trajectoire #{incident.track_id} · score du détecteur{" "}
+                        Track #{incident.track_id} · detector score{" "}
                         {(incident.details.confidence * 100).toFixed(0)} %
                       </p>
                       {canWrite && (
@@ -543,7 +543,7 @@ export default function App() {
                             setTab("investigations");
                           }}
                         >
-                          Ouvrir une investigation <ArrowRight size={15} />
+                          Open an investigation <ArrowRight size={15} />
                         </button>
                       )}
                     </div>
@@ -556,10 +556,10 @@ export default function App() {
         {tab === "knowledge" && (
           <section className="panel">
             <div className="panel-heading">
-              <h2>Bibliothèque de procédures</h2>
+              <h2>Procedure library</h2>
               {canWrite && (
                 <label className="button primary">
-                  <Upload size={15} /> Ajouter un document
+                  <Upload size={15} /> Add a document
                   <input
                     type="file"
                     accept=".pdf,.txt"
@@ -575,17 +575,16 @@ export default function App() {
               )}
             </div>
             <p className="section-description">
-              PDF avec texte ou TXT UTF-8. Chaque passage conserve le nom du
-              document et son numéro de page. Les PDF scannés nécessitent un
-              OCR, non inclus dans cette version.
+              Text-based PDF or UTF-8 TXT. Each passage keeps its document name
+              and page number. Scanned PDFs require OCR, which is not included
+              in this version.
             </p>
             {!documents.data?.length ? (
               <div className="empty">
                 <FileText />
-                <h3>Ajoutez votre première procédure</h3>
+                <h3>Add your first procedure</h3>
                 <p>
-                  Un exemple de procédure de démonstration est fourni dans le
-                  dossier examples.
+                  A sample demo procedure is provided in the examples folder.
                 </p>
               </div>
             ) : (
@@ -607,8 +606,8 @@ export default function App() {
             {!investigations.data?.length ? (
               <div className="panel empty">
                 <ShieldCheck />
-                <h3>Aucune investigation pour le moment</h3>
-                <p>Lancez une investigation depuis un événement détecté.</p>
+                <h3>No investigations yet</h3>
+                <p>Start an investigation from a detected event.</p>
               </div>
             ) : (
               investigations.data.map((inv) => (
@@ -626,7 +625,7 @@ export default function App() {
                         ))}
                       </ul>
                       <div className="recommendation">
-                        <span className="eyebrow">RECOMMANDATION</span>
+                        <span className="eyebrow">RECOMMENDATION</span>
                         <p>{inv.report.recommendation}</p>
                       </div>
                       {inv.report.sources.map((source) => (
@@ -636,12 +635,12 @@ export default function App() {
                             {source.page}
                           </summary>
                           <blockquote>{source.text}</blockquote>
-                          <small>Référence : {source.id}</small>
+                          <small>Reference: {source.id}</small>
                         </details>
                       ))}
                       {inv.report.limitations.length > 0 && (
                         <div className="limitations">
-                          <strong>Limites à considérer</strong>
+                          <strong>Limitations to consider</strong>
                           <ul>
                             {inv.report.limitations.map((v, i) => (
                               <li key={i}>{v}</li>
@@ -650,8 +649,8 @@ export default function App() {
                         </div>
                       )}
                       <small className="hint">
-                        Outils locaux utilisés :{" "}
-                        {inv.report.tool_trace.join(" → ") || "aucun"}
+                        Local tools used:{" "}
+                        {inv.report.tool_trace.join(" → ") || "none"}
                       </small>
                       {inv.status === "awaiting_review" && canWrite && (
                         <div className="review-actions">
@@ -665,7 +664,7 @@ export default function App() {
                               })
                             }
                           >
-                            <Check size={16} /> Approuver et créer un ticket
+                            <Check size={16} /> Approve and create ticket
                           </button>
                           <button
                             disabled={action.isPending}
@@ -676,7 +675,7 @@ export default function App() {
                               })
                             }
                           >
-                            Approuver sans ticket
+                            Approve without ticket
                           </button>
                           <button
                             className="danger"
@@ -688,21 +687,21 @@ export default function App() {
                               })
                             }
                           >
-                            Rejeter
+                            Reject
                           </button>
                         </div>
                       )}
                       {inv.ticket && (
                         <div className="ticket">
-                          <Check size={17} /> Ticket créé via MCP ·{" "}
+                          <Check size={17} /> Ticket created via MCP ·{" "}
                           {inv.ticket.id}
                         </div>
                       )}
                     </>
                   ) : (
                     <p className="section-description">
-                      Le traitement est en attente ou en cours. Consultez les
-                      tâches ci-dessous pour connaître les éventuelles erreurs.
+                      Processing is queued or running. Check the jobs below for
+                      any errors.
                     </p>
                   )}
                 </article>
@@ -713,23 +712,23 @@ export default function App() {
         <section className="panel jobs">
           <div className="panel-heading">
             <h2>
-              <Activity size={17} /> Activité des traitements
+              <Activity size={17} /> Job activity
             </h2>
-            <span className="subtle">ACTUALISATION AUTOMATIQUE</span>
+            <span className="subtle">AUTO-REFRESH</span>
           </div>
           {!jobs.data?.length ? (
             <p className="section-description">
-              Les analyses, indexations et investigations apparaîtront ici.
+              Analyses, indexing and investigations will appear here.
             </p>
           ) : (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Traitement</th>
-                    <th>Identifiant</th>
-                    <th>Progression</th>
-                    <th>État</th>
+                    <th>Job</th>
+                    <th>ID</th>
+                    <th>Progress</th>
+                    <th>Status</th>
                     <th />
                   </tr>
                 </thead>
@@ -757,7 +756,7 @@ export default function App() {
                               action.mutate({ path: `/jobs/${job.id}/retry` })
                             }
                           >
-                            Réessayer
+                            Retry
                           </button>
                         )}
                       </td>
@@ -771,7 +770,7 @@ export default function App() {
         <footer>
           WATCHTOWER{" "}
           <span>
-            Observations techniques · rapports assistés · décisions humaines
+            Technical observations · assisted reports · human decisions
           </span>
         </footer>
       </main>

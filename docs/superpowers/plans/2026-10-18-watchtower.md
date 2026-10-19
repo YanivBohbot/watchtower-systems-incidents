@@ -1,13 +1,13 @@
-# Plan d'implémentation
+# Implementation plan
 
-1. Domaine et contrats : écrire tests de règles et chunking, constater RED, implémenter les ports et règles.
-2. Persistance et API : écrire tests auth/upload/validation, puis modèles SQLAlchemy, migrations et endpoints.
-3. Pipelines : stockage, YOLO, traitement vidéo, ingestion, Qdrant, gestion des statuts ; tests par injection de ports.
-4. Agent : outils bornés, rapport structuré, contrôle des citations, SQLite checkpoints, interrupt/resume ; tests sans fournisseur payant.
-5. MCP : serveur stdio authentifié par frontière processus local, tickets SQLite, déduplication ; test client protocole réel.
-6. React : connexion, upload et sélection zone, documents, états/jobs, preuves, rapport et décision ; build TypeScript.
-7. Infra et documentation : Compose PostgreSQL/Redis/Qdrant/API/workers/frontend, CI, guide fichier par fichier et bilan vérifié.
+1. Domain and contracts: write rule and chunking tests, see RED, implement the ports and rules.
+2. Persistence and API: write auth/upload/validation tests, then SQLAlchemy models, migrations and endpoints.
+3. Pipelines: storage, YOLO, video processing, ingestion, Qdrant, status handling; tests through port injection.
+4. Agent: bounded tools, structured report, citation check, SQLite checkpoints, interrupt/resume; tests without a paid provider.
+5. MCP: stdio server authenticated by the local process boundary, SQLite tickets, deduplication; real protocol client test.
+6. React: sign-in, upload and zone selection, documents, statuses/jobs, evidence, report and decision; TypeScript build.
+7. Infra and documentation: Compose PostgreSQL/Redis/Qdrant/API/workers/frontend, CI, file-by-file guide and verified report.
 
 ## Review focus
-Concurrent resume, atomicité DB/queue, déduplication ticket après échec réseau,
-accès aux médias, fichiers invalides, secrets et références documentaires non récupérées.
+Concurrent resume, DB/queue atomicity, ticket deduplication after a network failure,
+media access, invalid files, secrets and document references that were never retrieved.

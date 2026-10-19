@@ -1,112 +1,112 @@
 # WatchTower
 
-Plateforme Full Stack d'analyse de vidéos importées et d'investigation assistée.
-Interface française, FastAPI, React/TypeScript, YOLO, RAG, LangChain/LangGraph et MCP.
+Full-stack platform for analyzing uploaded videos and running assisted investigations.
+English interface, FastAPI, React/TypeScript, YOLO, RAG, LangChain/LangGraph and MCP.
 
-**Version de portfolio fonctionnelle, pas une plateforme de surveillance certifiée.**
-Les sources implémentent les intégrations réelles ; les tests automatisés remplacent
-les appels payants et le détecteur par des ports déterministes. Lire
-[le bilan de vérification](docs/VERIFICATION.md) avant de confondre code fourni et intégrations exécutées.
+**A working portfolio version, not a certified surveillance platform.**
+The source code implements the real integrations; the automated tests replace paid
+calls and the detector with deterministic ports. Read
+[the verification report](docs/VERIFICATION.md) before mistaking shipped code for integrations that were run.
 
-## Lire et comprendre le projet
+## Reading and understanding the project
 
-- [Guide du code et de l'architecture, fichier par fichier](docs/GUIDE_FR.md)
-- [Infrastructure, contrats HTTP et exploitation](docs/OPERATIONS_FR.md)
-- [Spécification de la V1](docs/superpowers/specs/2026-10-18-watchtower.md)
-- [Vérifications réellement effectuées et limites](docs/VERIFICATION.md)
+- [Code and architecture guide, file by file](docs/GUIDE.md)
+- [Infrastructure, HTTP contracts and operations](docs/OPERATIONS.md)
+- [V1 specification](docs/superpowers/specs/2026-10-18-watchtower.md)
+- [Checks actually performed and limitations](docs/VERIFICATION.md)
 
-## Démarrage avec Docker Compose
+## Getting started with Docker Compose
 
-Prérequis : Docker avec Compose v2, Python 3 pour générer le fichier d'environnement,
-quelques Go disponibles pour l'image Python/PyTorch, accès Internet pour les images,
-les dépendances et les poids YOLO au premier lancement.
+Prerequisites: Docker with Compose v2, Python 3 to generate the environment file,
+a few GB free for the Python/PyTorch image, and Internet access for the images,
+the dependencies and the YOLO weights on first launch.
 
-Depuis le dossier extrait `watchtower` :
+From the project folder:
 
 ```bash
 python scripts/init_env.py
 ```
 
-Ouvrir `.env` dans son éditeur et renseigner `OPENAI_API_KEY` avec sa clé existante.
-Ne pas publier ce fichier. L'abonnement ChatGPT ne couvre pas les appels API.
-Le modèle et le modèle d'embeddings sont configurables ; choisir des modèles
-auxquels le projet OpenAI a effectivement accès.
+Open `.env` in your editor and set `OPENAI_API_KEY` to your existing key.
+Do not publish this file. A ChatGPT subscription does not cover API calls.
+The chat model and the embedding model are configurable; choose models your
+OpenAI project actually has access to.
 
 ```bash
 docker compose up --build -d
 docker compose exec api python -m app.cli create-user yaniv@example.com --role admin
 ```
 
-Le mot de passe est demandé dans le terminal, sans affichage. Minimum 12 caractères.
-Ouvrir **http://localhost:5173**, puis se connecter. Documentation HTTP :
+The password is prompted for in the terminal, without echo. Minimum 12 characters.
+Open **http://localhost:5173** and sign in. HTTP documentation:
 **http://localhost:5173/api/docs**.
 
-Le build par défaut utilise PyTorch CPU. Aucun GPU n'est obligatoire ; la vitesse
-dépend du matériel. Les vidéos sont limitées à 100 Mo, 180 secondes et 3840×2160.
-La durée maximale d'une tâche est également bornée.
+The default build uses CPU PyTorch. No GPU is required; speed depends on the
+hardware. Videos are limited to 100 MB, 180 seconds and 3840×2160.
+The maximum duration of a job is also capped.
 
-## Première démonstration
+## First demo
 
-1. Ajouter `examples/procedure-zone-a.txt` dans l'onglet **Procédures**.
-2. Attendre son état **Indexé**. L'indexation appelle l'API d'embeddings.
-3. Filmer une personne consentante, caméra fixe, 30–60 secondes : entrer, rester
-   dans une zone plusieurs secondes, puis ressortir.
-4. Importer la vidéo. Dessiner la zone et choisir un seuil de 2 ou 3 secondes.
-5. Cliquer **Lancer l'analyse**. Le premier traitement peut télécharger les poids YOLO.
-6. Depuis un événement, ouvrir une investigation. Le LLM consulte les observations,
-   les procédures et éventuellement les outils MCP de tickets.
-7. Lire le rapport, ses références et ses limites. Approuver avec ou sans ticket,
-   ou rejeter. Le ticket est créé par le workflow après approbation, jamais directement
-   par l'agent.
+1. Add `examples/procedure-zone-a.txt` in the **Procedures** tab.
+2. Wait for its **Indexed** status. Indexing calls the embeddings API.
+3. Film a consenting person with a fixed camera for 30–60 seconds: they walk in,
+   stay in a zone for a few seconds, then walk out.
+4. Upload the video. Draw the zone and choose a threshold of 2 or 3 seconds.
+5. Click **Start analysis**. The first run may download the YOLO weights.
+6. From an event, open an investigation. The LLM consults the observations,
+   the procedures and, if useful, the MCP ticket tools.
+7. Read the report, its references and its limitations. Approve with or without
+   a ticket, or reject. The ticket is created by the workflow after approval,
+   never directly by the agent.
 
-Une vidéo ne satisfaisant pas la règle peut légitimement produire zéro événement.
-Le système ne reconnaît pas l'identité ni l'intention d'une personne.
+A video that does not satisfy the rule can legitimately produce zero events.
+The system does not recognize a person's identity or intent.
 
-## Organisation
+## Layout
 
 ```text
 watchtower/
   backend/
     app/
-      domain/       contrats, géométrie et règle de durée
-      adapters/     stockage, YOLO, Qdrant et MCP
-      services/     pipelines vidéo et documentaire
-      agent/        agent, schéma du rapport et workflow HITL
-      api.py        interface HTTP et autorisations
-      auth.py       mots de passe et jetons
-      db.py         modèles et sessions SQL
-      runtime.py    assemblage des adaptateurs
-      tasks.py      tâches Celery et outbox SQL
-      cli.py        administration locale
-    migrations/     historique Alembic
-    tests/          tests métier, API, vidéo, RAG, agent et MCP
+      domain/       contracts, geometry and dwell rule
+      adapters/     storage, YOLO, Qdrant and MCP
+      services/     video and document pipelines
+      agent/        agent, report schema and HITL workflow
+      api.py        HTTP interface and permissions
+      auth.py       passwords and tokens
+      db.py         SQL models and sessions
+      runtime.py    adapter wiring
+      tasks.py      Celery tasks and SQL outbox
+      cli.py        local administration
+    migrations/     Alembic history
+    tests/          business, API, video, RAG, agent and MCP tests
   frontend/
-    src/            composants React, client HTTP et styles
-    tests/          scénario navigateur Playwright
-  mcp_server/       serveur de tickets MCP sur stdio
-  skills/           instructions versionnées de l'agent
-  examples/         procédure fictive de démonstration
-  scripts/          génération locale du fichier d'environnement
-  docs/             explication détaillée et bilan
-  compose.yaml      services, réseaux et volumes
+    src/            React components, HTTP client and styles
+    tests/          Playwright browser scenario
+  mcp_server/       MCP ticket server over stdio
+  skills/           versioned agent instructions
+  examples/         fictitious demo procedure
+  scripts/          local environment file generation
+  docs/             detailed explanation and report
+  compose.yaml      services, networks and volumes
 ```
 
-## Tests sans clé API
+## Tests without an API key
 
 ```bash
 cd backend
 python -m venv .venv
-# Linux/macOS : source .venv/bin/activate
-# PowerShell : .venv\Scripts\Activate.ps1
+# Linux/macOS: source .venv/bin/activate
+# PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.lock
 pip install -e '.[dev]'
 pytest
 ruff check app tests migrations
 ```
 
-L'extra `vision` est nécessaire pour lancer YOLO hors Docker :
-`pip install -e '.[vision]'`. Installer PyTorch CPU explicitement avant cet extra
-si l'on souhaite éviter les dépendances CUDA.
+The `vision` extra is required to run YOLO outside Docker:
+`pip install -e '.[vision]'`. Install CPU PyTorch explicitly before this extra
+if you want to avoid the CUDA dependencies.
 
 ```bash
 cd frontend
@@ -115,27 +115,27 @@ npm run build
 npx playwright install chromium
 ```
 
-Le scénario navigateur lance sa propre API de test : pas d'OpenAI, pas de Celery,
-pas de résultats de vision prétendument réels. Pour le lancer, définir
-`WATCHTOWER_PYTHON` vers le Python de l'environnement backend si `python` n'est pas
-déjà cet interpréteur, puis `npx playwright test`.
+The browser scenario starts its own test API: no OpenAI, no Celery, and no
+supposedly real vision results. To run it, set `WATCHTOWER_PYTHON` to the backend
+environment's Python if `python` is not already that interpreter, then run
+`npx playwright test`.
 
-## Limites assumées
+## Known limitations
 
-- Un seul espace partagé : les rôles s'appliquent à l'organisation entière.
-- Vidéos importées et une zone rectangulaire par vidéo ; pas de caméra live.
-- Détection de personnes avec YOLO COCO et ByteTrack ; perte d'ID possible en cas
-  d'occultation. Une nouvelle trajectoire peut générer un nouvel événement.
-- Documents PDF textuels/TXT ; pas d'OCR. Les documents sont immuables et dédupliqués
-  par contenu. Remplacement/suppression de versions : non implémentés.
-- Stockage local partagé par volumes. Le port `Storage` prépare un remplacement S3,
-  mais l'adaptateur S3 n'est pas inclus dans cette V1.
-- Le LLM reçoit des observations structurées et des liens vers les preuves,
-  pas les pixels de la capture. L'analyse multimodale par VLM est une extension distincte.
-- Un seul worker d'investigation ; checkpoints SQLite. Pour le distribuer,
-  remplacer le saver par PostgreSQL et revoir le verrouillage.
-- Actualisation de l'interface par polling, pas SSE/WebSocket.
-- Pas de SSO, multi-tenant, TLS public, autoscaling, ni supervision externe configurés.
+- A single shared workspace: roles apply to the whole organization.
+- Uploaded videos and one rectangular zone per video; no live camera.
+- Person detection with YOLO COCO and ByteTrack; IDs can be lost during
+  occlusion. A new track can generate a new event.
+- Text PDF/TXT documents; no OCR. Documents are immutable and deduplicated by
+  content. Replacing or deleting versions is not implemented.
+- Local storage shared through volumes. The `Storage` port prepares an S3
+  replacement, but the S3 adapter is not included in this V1.
+- The LLM receives structured observations and links to the evidence, not the
+  pixels of the capture. Multimodal analysis with a VLM is a separate extension.
+- A single investigation worker; SQLite checkpoints. To distribute it, replace
+  the saver with PostgreSQL and revisit locking.
+- The UI refreshes by polling, not SSE/WebSocket.
+- No SSO, multi-tenancy, public TLS, autoscaling or external monitoring configured.
 
-La documentation explique les extensions possibles ; elle ne les présente pas
-comme déjà développées.
+The documentation explains possible extensions; it does not present them as
+already built.

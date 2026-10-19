@@ -10,23 +10,23 @@ test("login, empty workspace, document upload and logout through the real API", 
   await page.getByLabel("Mot de passe").fill("browser-password-123");
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(
-    page.getByRole("heading", { name: "Une vue claire sur chaque événement." }),
+    page.getByRole("heading", { name: "A clear view of every event." }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Votre première analyse commence ici." }),
+    page.getByRole("heading", { name: "Your first analysis starts here." }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Procédures", exact: true }).click();
+  await page.getByRole("button", { name: "Procedures", exact: true }).click();
   await page.locator("input[type=file]").setInputFiles({
     name: "procedure.txt",
     mimeType: "text/plain",
-    buffer: Buffer.from("Zone A : vérifier la vidéo avant de créer un ticket."),
+    buffer: Buffer.from("Zone A: check the video before creating a ticket."),
   });
   await expect(page.getByText("procedure.txt", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Document enregistré. Consulte son état d’indexation."),
+    page.getByText("Document saved. Check its indexing status."),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/workspace.png", fullPage: true });
-  await page.getByRole("button", { name: "Déconnexion" }).click();
+  await page.getByRole("button", { name: "Sign out" }).click();
   await expect(
     page.getByRole("button", { name: "Se connecter" }),
   ).toBeVisible();

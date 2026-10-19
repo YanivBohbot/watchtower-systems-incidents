@@ -15,7 +15,7 @@ export async function request<T>(
     throw new Error(
       typeof error.detail === "string"
         ? error.detail
-        : `Requête invalide (${response.status})`,
+        : `Invalid request (${response.status})`,
     );
   }
   return response.json() as Promise<T>;
@@ -30,6 +30,6 @@ export async function mediaUrl(
     headers: { Authorization: `Bearer ${token}` },
     signal,
   });
-  if (!response.ok) throw new Error("Impossible de charger le média");
+  if (!response.ok) throw new Error("Unable to load media");
   return URL.createObjectURL(await response.blob());
 }

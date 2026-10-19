@@ -78,14 +78,14 @@ export default function ZoneEditor({
       </div>
       <p className="hint">
         {editing
-          ? "Glisse sur l’image pour définir la zone."
-          : "La sélection est figée ; tu peux lire la vidéo."}{" "}
+          ? "Drag on the image to define the zone."
+          : "Selection locked; you can play the video."}{" "}
         <button
           type="button"
           className="text-button"
           onClick={() => setEditing(!editing)}
         >
-          {editing ? "Terminer la sélection" : "Modifier la zone"}
+          {editing ? "Finish selection" : "Edit zone"}
         </button>
       </p>
     </div>

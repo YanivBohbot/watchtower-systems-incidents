@@ -1,30 +1,30 @@
-# WatchTower — spécification de la version livrée
+# WatchTower — specification of the delivered version
 
-Application éducative Full Stack pour vidéos importées : détection de personnes,
-suivi, règle de présence dans une zone rectangulaire normalisée, incidents avec
-capture, documents PDF/TXT, recherche vectorielle, investigation agentique et
-validation humaine avant création d'un ticket via un véritable serveur MCP.
+Educational full-stack application for uploaded videos: person detection,
+tracking, a presence rule in a normalized rectangular zone, incidents with a
+capture, PDF/TXT documents, vector search, agentic investigation and human
+review before a ticket is created through a real MCP server.
 
-## Contrats
-- Identifiants UUID. Une seule organisation, plusieurs utilisateurs, rôles viewer/operator/admin.
-- Authentification JWT signée, mots de passe PBKDF2. Aucun compte prédéfini public.
-- API synchrone courte, Celery pour traitements. PostgreSQL en Docker, SQLite en tests.
-- Port de stockage avec adaptateur local livré ; S3 réservé à une extension ; port de détection YOLO ; embeddings OpenAI ; Qdrant.
-- Une analyse vidéo est idempotente : un événement au maximum par trajectoire et zone.
-- Les détections utilisent les secondes de la vidéo, jamais le temps de calcul.
-- Agent LangChain à outils en lecture seule dans un workflow LangGraph persistant.
-- Citation valide = identifiant de passage réellement récupéré pendant ce run.
-- Reprise HITL : approbation/rejet déterministe, ticket idempotent par investigation.
-- Aucune clé dans les sources. Aucun appel payant requis pour les tests.
+## Contracts
+- UUID identifiers. A single organization, several users, viewer/operator/admin roles.
+- Signed JWT authentication, PBKDF2 passwords. No public predefined account.
+- Short synchronous API, Celery for processing. PostgreSQL in Docker, SQLite in tests.
+- Storage port with a shipped local adapter; S3 reserved for an extension; YOLO detection port; OpenAI embeddings; Qdrant.
+- A video analysis is idempotent: at most one event per track and zone.
+- Detections use video seconds, never compute time.
+- LangChain agent with read-only tools inside a persistent LangGraph workflow.
+- Valid citation = ID of a passage actually retrieved during this run.
+- HITL resume: deterministic approve/reject, idempotent ticket per investigation.
+- No keys in the source code. No paid call required for the tests.
 
-## Limites explicites
-V1 : fichier vidéo, zone rectangulaire, personnes, documents textuels, mono-organisation.
-Pas de live RTSP, OCR, garantie de suivi entre occultations, ni déploiement Kubernetes.
-La vérification des références ne prouve pas à elle seule la vérité du texte généré.
-YOLO est optionnel à l'installation locale ; poids à fournir/télécharger au premier usage.
-Tests avec ports déterministes ; intégrations live évaluées séparément selon disponibilité.
+## Explicit limits
+V1: video file, rectangular zone, people, text documents, single organization.
+No live RTSP, OCR, tracking guarantee across occlusions, or Kubernetes deployment.
+Reference checking alone does not prove the generated text is true.
+YOLO is optional for a local install; weights are supplied or downloaded on first use.
+Tests use deterministic ports; live integrations are evaluated separately when available.
 
-## Critères
-Tests de règles (sortie de zone, trou de suivi, seuil et doublons), autorisations API,
-uploads, RAG avec filtrage des documents indexés, références inventées rejetées, pause/reprise
-du graphe et ticket MCP idempotent. Build TypeScript. Configuration Docker et guide FR.
+## Criteria
+Rule tests (zone exit, tracking gap, threshold and duplicates), API permissions,
+uploads, RAG with filtering on indexed documents, invented references rejected, graph
+pause/resume and idempotent MCP ticket. TypeScript build. Docker configuration and guide.

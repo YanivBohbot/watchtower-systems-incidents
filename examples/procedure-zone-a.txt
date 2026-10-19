@@ -1,13 +1,13 @@
-PROCÉDURE DE DÉMONSTRATION — DONNÉES FICTIVES
+DEMO PROCEDURE — FICTITIOUS DATA
 Version 1.0 — Zone A
 
-Une présence détectée au-delà du seuil configuré déclenche une demande de vérification.
-L'opérateur doit consulter la capture et l'extrait vidéo autour de l'événement.
-Il doit vérifier si le passage était autorisé et si le suivi a été interrompu.
-Le score du détecteur n'est pas une probabilité de danger.
-Une trajectoire ne permet pas d'identifier une personne.
+A presence detected beyond the configured threshold triggers a verification request.
+The operator must review the capture and the video excerpt around the event.
+They must check whether the passage was authorized and whether tracking was interrupted.
+The detector score is not a probability of danger.
+A track does not identify a person.
 
-Si la présence demeure inexpliquée, préparer un ticket indiquant la vidéo,
-l'horodatage, la zone, les preuves et les informations manquantes.
-La création du ticket exige une validation humaine explicite.
-Ne pas déclencher d'intervention physique ou de sanction sur cette seule analyse.
+If the presence remains unexplained, prepare a ticket stating the video,
+the timestamp, the zone, the evidence and the missing information.
+Creating the ticket requires explicit human approval.
+Do not trigger any physical intervention or sanction based on this analysis alone.

@@ -1,18 +1,18 @@
-# Exécution — 2026-10-18-watchtower
+# Execution — 2026-10-18-watchtower
 
-Le demandeur a explicitement demandé l'implémentation de bout en bout et confirmé sa clé existante.
-Exécution locale, aucune clé lue ou créée, aucun appel OpenAI live.
-Ruling: checkpoint LangGraph SQLite partagé uniquement par le worker d'investigation singleton ; PostgreSQL conserve les données métier. Évite d'ajouter un second service pour les checkpoints dans cette V1 ; pour plusieurs workers passer au saver PostgreSQL.
-Ruling: stockage local par défaut pour démarrage simple ; adaptateur S3 fourni.
-Ruling: vidéos importées et rectangles uniquement pour un premier parcours concret et testable.
+The requester explicitly asked for an end-to-end implementation and confirmed they had an existing key.
+Local execution, no key read or created, no live OpenAI call.
+Ruling: LangGraph SQLite checkpoint shared only by the singleton investigation worker; PostgreSQL keeps the business data. Avoids adding a second service for checkpoints in this V1; for multiple workers, switch to the PostgreSQL saver.
+Ruling: local storage by default for a simple start; S3 adapter provided.
+Ruling: uploaded videos and rectangles only, for a first concrete and testable flow.
 
-Task 1: complete — contrats et tests de règles.
-Task 2: complete — API, rôles, persistance et uploads.
-Task 3: complete — pipelines vidéo/documentaire, agents et workflow checkpointé.
-Task 4: complete — MCP réel, React, Compose, migration et CI.
-Task 5: complete — guide fichier par fichier, exploitation et bilan des validations.
-Final review: relecture indépendante ; dépendance lap et conflit d'upload corrigés.
-Final fixed: conflit concurrent d'upload — test reproduit 500 puis passé après correctif.
-Final fixed: différence Float/Double de migration — comparaison RED puis GREEN.
-Final verification: 19 tests backend ; un scénario Playwright ; build React ; YOLO/ByteTrack réel et pipeline vidéo avec captures.
-Operational limits: pas de Docker ni d'OpenAI live exécutés ; singleton checkpoints ; reprise manuelle après mort brutale d'un worker.
+Task 1: complete — contracts and rule tests.
+Task 2: complete — API, roles, persistence and uploads.
+Task 3: complete — video/document pipelines, agents and checkpointed workflow.
+Task 4: complete — real MCP, React, Compose, migration and CI.
+Task 5: complete — file-by-file guide, operations and verification report.
+Final review: independent review; lap dependency and upload conflict fixed.
+Final fixed: concurrent upload conflict — test reproduced the 500, then passed after the fix.
+Final fixed: Float/Double migration mismatch — comparison RED, then GREEN.
+Final verification: 19 backend tests; one Playwright scenario; React build; real YOLO/ByteTrack and video pipeline with captures.
+Operational limits: no Docker or live OpenAI run; singleton checkpoints; manual recovery after a worker crash.

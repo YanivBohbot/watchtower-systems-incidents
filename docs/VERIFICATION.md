@@ -1,51 +1,51 @@
-# Bilan de vérification — 18 octobre 2026
+# Verification report — October 18, 2026
 
-Ce document distingue les sources implémentées des intégrations effectivement exécutées.
-Aucune clé utilisateur n'a été lue ou enregistrée. Aucun appel OpenAI payant n'a été effectué.
+This document separates the implemented source code from the integrations that were actually run.
+No user key was read or stored. No paid OpenAI call was made.
 
-| Contrôle | Résultat | Périmètre réel |
+| Check | Result | Actual scope |
 |---|---|---|
-| Suite Python `pytest -q` | **19 tests réussis** | Règles, auth, rôles, uploads, concurrence, RAG, vidéo, graphe, agent, MCP, migration, jobs |
-| Ruff | **Réussi** | Imports, erreurs Python et formatage des fichiers applicatifs/tests/migrations |
-| Build React `npm run build` | **Réussi** | Vérification TypeScript et bundle Vite |
-| Prettier | **Réussi** | Sources React, CSS et configuration frontend |
-| Playwright | **1 scénario réussi** | Chromium, vraie API FastAPI de test : connexion, espace vide, upload TXT, liste et déconnexion |
-| YOLO + ByteTrack réels | **Réussi** | Image de référence Ultralytics : trois personnes suivies, coordonnées normalisées |
-| Pipeline vidéo avec YOLO réel | **Réussi** | Huit frames d'une image de référence répétée : trois incidents SQL et leurs captures JPEG |
-| Migration Alembic | **Réussi sur SQLite** | Schéma neuf comparé aux modèles, aucune différence |
-| MCP stdio | **Réussi** | Processus serveur réel, découverte d'outils, création, recherche et déduplication persistante |
-| LangChain | **Réussi avec fournisseur scripté** | Boucle réelle d'appel d'outil et rapport structuré ; pas une réponse OpenAI live |
-| LangGraph | **Réussi** | Checkpoint, arrêt pour revue, reprise après réouverture, rejet et retry de publication |
-| Qdrant SDK | **Réussi en mode embarqué** | Upsert, classement vectoriel et suppression ; pas un serveur distant |
-| Fichier Compose | **YAML parsé** | Services et volumes inspectés ; moteur Docker absent |
-| Dépendances Python | **Réussi** | Résolution du lock et `pip check` sans incompatibilité |
+| Python suite `pytest -q` | **19 tests passed** | Rules, auth, roles, uploads, concurrency, RAG, video, graph, agent, MCP, migration, jobs |
+| Ruff | **Passed** | Imports, Python errors and formatting of application/test/migration files |
+| React build `npm run build` | **Passed** | TypeScript check and Vite bundle |
+| Prettier | **Passed** | React sources, CSS and frontend configuration |
+| Playwright | **1 scenario passed** | Chromium, real test FastAPI server: sign-in, empty workspace, TXT upload, list and sign-out |
+| Real YOLO + ByteTrack | **Passed** | Ultralytics reference image: three people tracked, normalized coordinates |
+| Video pipeline with real YOLO | **Passed** | Eight frames of a repeated reference image: three SQL incidents and their JPEG captures |
+| Alembic migration | **Passed on SQLite** | Fresh schema compared with the models, no difference |
+| MCP stdio | **Passed** | Real server process, tool discovery, creation, search and persistent deduplication |
+| LangChain | **Passed with a scripted provider** | Real tool-calling loop and structured report; not a live OpenAI response |
+| LangGraph | **Passed** | Checkpoint, stop for review, resume after reopening, rejection and publication retry |
+| Qdrant SDK | **Passed in embedded mode** | Upsert, vector ranking and deletion; not a remote server |
+| Compose file | **YAML parsed** | Services and volumes inspected; no Docker engine available |
+| Python dependencies | **Passed** | Lock resolution and `pip check` with no incompatibility |
 
-## Ce qui n'a pas été exécuté
+## What was not run
 
-- Build des images et `docker compose up` : Docker n'est pas installé dans l'environnement de travail.
-- PostgreSQL, Redis/Celery broker et Qdrant réseau réunis dans le même déploiement.
-- Appels OpenAI d'embeddings et de génération avec la clé personnelle du demandeur.
-- Un parcours navigateur complet depuis une vraie vidéo jusqu'à un rapport OpenAI puis un ticket.
-- Tests de charge, évaluation de précision sur vidéos représentatives, GPU ou caméra live.
+- Building the images and `docker compose up`: Docker is not installed in the working environment.
+- PostgreSQL, the Redis/Celery broker and networked Qdrant together in the same deployment.
+- OpenAI embedding and generation calls with the requester's personal key.
+- A full browser flow from a real video to an OpenAI report and then a ticket.
+- Load tests, accuracy evaluation on representative videos, GPU or live camera.
 
-Le test YOLO sur huit frames répétées est un test d'intégration technique, **pas une
-mesure de qualité sur des incidents réels**. Le test navigateur valide une partie
-du parcours ; les tests backend couvrent séparément les étapes restantes.
+The YOLO test on eight repeated frames is a technical integration test, **not a
+quality measurement on real incidents**. The browser test covers part of the
+flow; the backend tests cover the remaining steps separately.
 
-## Corrections issues de la vérification
+## Fixes found during verification
 
-- Installation explicite de `lap` pour ByteTrack.
-- Uploads documentaires simultanés : un seul document/job, sans réponse 500 ; test de concurrence ajouté.
-- Migration alignée sur le type SQL du temps vidéo ; comparaison automatique ajoutée.
-- Injection du client Qdrant pour tester son SDK sans ouvrir de connexion réseau non souhaitée.
-- Serveur Vite lié à localhost pour démarrer dans un environnement sans accès à l'inventaire réseau système.
+- Explicit install of `lap` for ByteTrack.
+- Concurrent document uploads: a single document/job, no 500 response; concurrency test added.
+- Migration aligned with the SQL type of video time; automatic comparison added.
+- Qdrant client injection, to test its SDK without opening an unwanted network connection.
+- Vite server bound to localhost so it starts in an environment without access to the system network inventory.
 
-Une relecture indépendante des sources a examiné autorisations, états des jobs,
-approbation concurrente, idempotence MCP, médias et démarrage. Les deux problèmes
-concrets signalés ont été corrigés. Les limites d'exploitation restent décrites
-dans README et OPERATIONS_FR.md.
+An independent review of the source examined permissions, job states,
+concurrent approval, MCP idempotency, media and startup. The two concrete issues
+it reported were fixed. Operational limits remain described in the README and
+OPERATIONS.md.
 
-## Reproduire les vérifications
+## Reproducing the checks
 
 ```bash
 cd backend
@@ -59,15 +59,15 @@ cd frontend
 npm ci
 npm run build
 npx playwright install chromium
-# Définir WATCHTOWER_PYTHON si le Python backend n'est pas celui du PATH.
+# Set WATCHTOWER_PYTHON if the backend Python is not the one on PATH.
 npx playwright test
 ```
 
-Pour le test de vision réel, avec l'extra vision installé, depuis la racine :
+For the real vision test, with the vision extra installed, from the project root:
 
 ```bash
-python scripts/smoke_vision.py --model CHEMIN_VERS/yolov8n.pt
+python scripts/smoke_vision.py --model PATH_TO/yolov8n.pt
 ```
 
-Les poids sont téléchargés s'ils sont absents et disponibles pour Ultralytics.
-Les vidéos et poids utilisés pour les essais ne sont pas inclus dans l'archive.
+The weights are downloaded if missing and available to Ultralytics.
+The videos and weights used for the trials are not included in the project.
