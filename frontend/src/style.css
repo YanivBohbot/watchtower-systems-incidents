@@ -932,3 +932,118 @@ footer span {
     width: 100%;
   }
 }
+.live {
+  display: grid;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+.live-state {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #8a9a94;
+}
+.live-state.on {
+  color: #2d7256;
+}
+.camera-wall {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px;
+  background: #1b2b32;
+}
+.camera-tile {
+  margin: 0;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  max-width: 100%;
+  background: #2b3d44;
+  border-radius: 6px;
+  overflow: hidden;
+  outline: 3px solid transparent;
+}
+.camera-tile.alerting {
+  outline-color: #d93636;
+}
+.camera-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.camera-offline {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #8fa3ab;
+  font-size: 12px;
+}
+.camera-tile figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  background: rgba(15, 25, 29, 0.72);
+  color: #e3ebe8;
+  font-size: 11px;
+}
+.alert-banner {
+  display: grid;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #d93636;
+  color: #fff;
+}
+.alert-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.alert-more {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.alert-actions button {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  padding: 6px 12px;
+}
+.alert-snapshot {
+  max-width: min(100%, 480px);
+  border-radius: 6px;
+}
+.alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+}
+.alert-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 12px;
+  padding: 10px 22px;
+  border-bottom: 1px solid #edf0ee;
+  font-size: 12px;
+}
+.empty-live {
+  padding: 22px;
+  margin: 0;
+  color: #6a877b;
+}
+@media (max-width: 700px) {
+  .camera-wall {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px;
+  }
+}

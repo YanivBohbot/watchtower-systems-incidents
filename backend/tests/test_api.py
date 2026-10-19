@@ -229,6 +229,8 @@ def test_alerts_newest_first_and_snapshot(live_client):
     client, _, headers = live_client
     assert [a["id"] for a in client.get("/api/alerts", headers=headers).json()] == ["a2", "a1"]
     assert "snapshot_key" not in client.get("/api/alerts", headers=headers).json()[0]
+    # SQLite returns naive datetimes; the browser must not read them as local time.
+    assert client.get("/api/alerts", headers=headers).json()[0]["created_at"] == "2026-10-19T11:00:00+00:00"
     assert client.get("/api/alerts/a2/snapshot", headers=headers).content == b"\xff\xd8snapshot"
     assert client.get("/api/alerts/nope/snapshot", headers=headers).status_code == 404
 

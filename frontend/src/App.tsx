@@ -9,12 +9,14 @@ import {
   FileText,
   Film,
   LogOut,
+  MonitorPlay,
   Radar,
   ShieldCheck,
   Upload,
   X,
 } from "lucide-react";
 import { mediaUrl, request } from "./api";
+import LiveWall from "./LiveWall";
 import ZoneEditor from "./ZoneEditor";
 import type {
   Document,
@@ -172,9 +174,9 @@ export default function App() {
   const [token, setToken] = useState(
     () => sessionStorage.getItem("watchtower-token") || "",
   );
-  const [tab, setTab] = useState<"workspace" | "knowledge" | "investigations">(
-    "workspace",
-  );
+  const [tab, setTab] = useState<
+    "live" | "workspace" | "knowledge" | "investigations"
+  >("live");
   const [file, setFile] = useState<File | null>(null),
     [localUrl, setLocalUrl] = useState("");
   const [zone, setZone] = useState<Zone>(initialZone),
@@ -301,6 +303,12 @@ export default function App() {
         <div className="nav-label">YOUR WORKSPACE</div>
         <nav>
           <button
+            className={tab === "live" ? "active" : ""}
+            onClick={() => setTab("live")}
+          >
+            <MonitorPlay size={18} /> Live cameras
+          </button>
+          <button
             className={tab === "workspace" ? "active" : ""}
             onClick={() => setTab("workspace")}
           >
@@ -343,11 +351,13 @@ export default function App() {
         <header>
           <span>
             Workspace <ChevronRight size={13} />{" "}
-            {tab === "workspace"
-              ? "Video analysis"
-              : tab === "knowledge"
-                ? "Procedures"
-                : "Investigations"}
+            {tab === "live"
+              ? "Live cameras"
+              : tab === "workspace"
+                ? "Video analysis"
+                : tab === "knowledge"
+                  ? "Procedures"
+                  : "Investigations"}
           </span>
           <span className="environment">
             <i /> LOCAL ENVIRONMENT
@@ -357,18 +367,22 @@ export default function App() {
           <div>
             <span className="eyebrow">FROM OBSERVATION TO ACTION</span>
             <h1>
-              {tab === "workspace"
-                ? "A clear view of every event."
-                : tab === "knowledge"
-                  ? "The context behind every decision."
-                  : "Conclusions you can verify."}
+              {tab === "live"
+                ? "Every camera at a glance."
+                : tab === "workspace"
+                  ? "A clear view of every event."
+                  : tab === "knowledge"
+                    ? "The context behind every decision."
+                    : "Conclusions you can verify."}
             </h1>
             <p>
-              {tab === "workspace"
-                ? "Upload a video, define a zone and find all the evidence in one place."
-                : tab === "knowledge"
-                  ? "Indexed procedures feed investigations with verifiable references."
-                  : "Review the observations, sources and limitations before approving a report."}
+              {tab === "live"
+                ? "Alerts reach you within seconds. You decide what happens next."
+                : tab === "workspace"
+                  ? "Upload a video, define a zone and find all the evidence in one place."
+                  : tab === "knowledge"
+                    ? "Indexed procedures feed investigations with verifiable references."
+                    : "Review the observations, sources and limitations before approving a report."}
             </p>
           </div>
         </div>
@@ -407,6 +421,7 @@ export default function App() {
             <strong>{pending}</strong>
           </div>
         </section>
+        {tab === "live" && <LiveWall token={token} />}
         {tab === "workspace" && (
           <div className="workspace-grid">
             <section className="panel video-panel">

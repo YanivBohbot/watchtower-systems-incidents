@@ -5,6 +5,7 @@ import json
 import logging
 import tempfile
 from contextlib import asynccontextmanager
+from datetime import timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -311,7 +312,11 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None, hub=None):
     def alerts(limit: int = Query(50, ge=1, le=200), user=Depends(current)):
         with sessions() as db:
             rows = db.scalars(select(Alert).order_by(Alert.created_at.desc()).limit(limit))
-            return [public(a) for a in rows]
+            # SQLite drops the timezone; stored times are UTC, so say so to the browser.
+            return [
+                {**public(a), "created_at": a.created_at.replace(tzinfo=a.created_at.tzinfo or timezone.utc)}
+                for a in rows
+            ]
 
     @app.get("/api/alerts/{alert_id}/snapshot")
     def alert_snapshot(alert_id: str, user=Depends(current)):

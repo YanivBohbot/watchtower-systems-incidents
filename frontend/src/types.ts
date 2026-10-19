@@ -53,3 +53,28 @@ export type Investigation = {
   report: Report | null;
   ticket: { id: string; title: string } | null;
 };
+export type CameraStatus = {
+  state: "live" | "error";
+  frames_analyzed: number;
+  analysis_fps: number;
+  last_seen: string;
+  error: string | null;
+};
+export type Camera = {
+  id: string;
+  site: string;
+  name: string;
+  labels: string[];
+  enabled: boolean;
+  zone: Zone | null;
+  status: CameraStatus | null;
+};
+export type Alert = {
+  id: string;
+  camera_id: string;
+  kind: string;
+  status: string;
+  created_at: string;
+  details: { confidence?: number; track_id?: number };
+};
+export type LiveEvent = { type: "alert"; alert: Alert };
