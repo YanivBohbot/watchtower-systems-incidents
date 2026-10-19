@@ -1,0 +1,95 @@
+name: watchtower
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  env_file: .env
+  environment:
+    DATA_DIR: /data
+    MCP_SERVER_PATH: /project/mcp_server/server.py
+    SKILL_PATH: /project/skills/investigate/SKILL.md
+    YOLO_MODEL: /data/models/yolov8n.pt
+  volumes:
+    - app-data:/data
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    qdrant:
+      condition: service_started
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: watchtower
+      POSTGRES_USER: watchtower
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U watchtower"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  qdrant:
+    image: qdrant/qdrant:v1.15.5
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+  migrate:
+    <<: *backend
+    command: [alembic, upgrade, head]
+    restart: 'no'
+  api:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # Access via the frontend proxy; direct API is deliberately not exposed.
+  worker:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: [celery, -A, app.tasks:celery, worker, -Q, processing, --concurrency=1, --loglevel=INFO]
+  investigator:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # Singleton protects the SQLite checkpoint saver. Do not scale this service.
+    command: [celery, -A, app.tasks:celery, worker, -Q, investigation, --concurrency=1, --loglevel=INFO]
+  scheduler:
+    <<: *backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: [celery, -A, app.tasks:celery, beat, --loglevel=INFO, --schedule=/data/celerybeat-schedule]
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - 127.0.0.1:5173:8080
+    volumes:
+      - ./frontend/nginx-limits.conf:/etc/nginx/conf.d/00-limits.conf:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  qdrant-data:
+  app-data:

@@ -1,0 +1,335 @@
+aiosqlite==0.22.1
+    # via langgraph-checkpoint-sqlite
+alembic==1.20.0
+    # via watchtower-backend (pyproject.toml)
+amqp==5.4.1
+    # via kombu
+annotated-doc==0.0.5
+    # via fastapi
+annotated-types==0.8.0
+    # via pydantic
+anyio==4.15.1
+    # via
+    #   httpx
+    #   httpx2
+    #   langsmith
+    #   mcp
+    #   openai
+    #   sse-starlette
+    #   starlette
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
+billiard==4.3.1
+    # via celery
+celery==5.6.3
+    # via watchtower-backend (pyproject.toml)
+certifi==2026.10.18
+    # via
+    #   httpcore
+    #   httpx
+    #   langchain-openai
+    #   requests
+cffi==2.1.1
+    # via cryptography
+charset-normalizer==3.5.2
+    # via requests
+click==8.5.0
+    # via
+    #   celery
+    #   click-didyoumean
+    #   click-plugins
+    #   click-repl
+    #   uvicorn
+click-didyoumean==0.3.1
+    # via celery
+click-plugins==1.1.1.2
+    # via celery
+click-repl==0.4.1
+    # via celery
+cryptography==50.0.2
+    # via pyjwt
+distro==1.9.0
+    # via langsmith
+fastapi==0.146.0
+    # via watchtower-backend (pyproject.toml)
+grpcio==1.84.0
+    # via qdrant-client
+h11==0.16.0
+    # via
+    #   httpcore
+    #   httpcore2
+    #   uvicorn
+h2==4.4.1
+    # via httpx
+hpack==4.2.0
+    # via h2
+httpcore==1.0.9
+    # via httpx
+httpcore2==2.14.0
+    # via httpx2
+httpx==0.28.1
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   langchain-core
+    #   langgraph-sdk
+    #   mcp
+    #   qdrant-client
+httpx-sse==0.4.3
+    # via mcp
+httpx2==2.14.0
+    # via
+    #   langsmith
+    #   openai
+hyperframe==6.1.0
+    # via h2
+idna==3.20
+    # via
+    #   anyio
+    #   httpx
+    #   httpx2
+    #   requests
+iniconfig==2.3.1
+    # via pytest
+jiter==0.17.0
+    # via openai
+jsonpatch==1.35
+    # via langchain-core
+jsonpointer==3.2.1
+    # via jsonpatch
+jsonschema==4.26.0
+    # via mcp
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+kombu==5.6.2
+    # via celery
+langchain==1.4.6
+    # via watchtower-backend (pyproject.toml)
+langchain-core==1.6.12
+    # via
+    #   langchain
+    #   langchain-mcp-adapters
+    #   langchain-openai
+    #   langgraph
+    #   langgraph-checkpoint
+    #   langgraph-prebuilt
+    #   langgraph-sdk
+langchain-mcp-adapters==0.3.2
+    # via watchtower-backend (pyproject.toml)
+langchain-openai==1.7.2
+    # via watchtower-backend (pyproject.toml)
+langchain-protocol==0.0.19
+    # via
+    #   langchain-core
+    #   langgraph-sdk
+langgraph==1.2.16
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   langchain
+langgraph-checkpoint==4.3.0
+    # via
+    #   langgraph
+    #   langgraph-checkpoint-sqlite
+    #   langgraph-prebuilt
+langgraph-checkpoint-sqlite==3.1.2
+    # via watchtower-backend (pyproject.toml)
+langgraph-prebuilt==1.1.1
+    # via langgraph
+langgraph-sdk==0.4.8
+    # via langgraph
+langsmith==0.14.11
+    # via langchain-core
+mako==1.4.3
+    # via alembic
+markupsafe==3.0.4
+    # via mako
+mcp==1.30.0
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   langchain-mcp-adapters
+numpy==2.5.4
+    # via
+    #   opencv-python-headless
+    #   qdrant-client
+openai==3.35.1
+    # via langchain-openai
+opencv-python-headless==5.0.0.93
+    # via watchtower-backend (pyproject.toml)
+opentelemetry-api==1.45.1
+    # via fastapi
+orjson==3.13.0
+    # via
+    #   langgraph-sdk
+    #   langsmith
+ormsgpack==1.13.0
+    # via langgraph-checkpoint
+packaging==26.3
+    # via
+    #   kombu
+    #   langchain-core
+    #   langsmith
+    #   pytest
+pluggy==1.7.0
+    # via pytest
+portalocker==3.2.0
+    # via qdrant-client
+prompt-toolkit==3.0.53
+    # via click-repl
+protobuf==7.36.2
+    # via qdrant-client
+psycopg==3.3.6
+    # via watchtower-backend (pyproject.toml)
+psycopg-binary==3.3.6
+    # via psycopg
+pycparser==3.11
+    # via cffi
+pydantic==2.14.1
+    # via
+    #   fastapi
+    #   langchain
+    #   langchain-core
+    #   langgraph
+    #   langsmith
+    #   mcp
+    #   openai
+    #   pydantic-settings
+    #   qdrant-client
+pydantic-core==2.50.1
+    # via pydantic
+pydantic-settings==2.16.0
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   mcp
+pygments==2.21.0
+    # via pytest
+pyjwt==2.15.1
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   mcp
+pypdf==6.21.1
+    # via watchtower-backend (pyproject.toml)
+pytest==9.1.1
+    # via watchtower-backend (pyproject.toml)
+python-dateutil==2.9.0.post0
+    # via celery
+python-dotenv==1.2.4
+    # via pydantic-settings
+python-multipart==0.0.32
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   mcp
+pyyaml==6.0.3
+    # via langchain-core
+qdrant-client==1.19.1
+    # via watchtower-backend (pyproject.toml)
+redis==8.1.0
+    # via watchtower-backend (pyproject.toml)
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+regex==2026.9.29
+    # via tiktoken
+requests==2.34.2
+    # via
+    #   langsmith
+    #   requests-toolbelt
+    #   tiktoken
+requests-toolbelt==1.0.0
+    # via langsmith
+rpds-py==2026.9.1
+    # via
+    #   jsonschema
+    #   referencing
+ruff==0.17.1
+    # via watchtower-backend (pyproject.toml)
+six==1.17.0
+    # via python-dateutil
+sniffio==1.3.1
+    # via
+    #   langsmith
+    #   openai
+sqlalchemy==2.1.5
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   alembic
+sqlite-vec==0.1.9
+    # via langgraph-checkpoint-sqlite
+sse-starlette==3.5.0
+    # via mcp
+starlette==1.9.0
+    # via
+    #   fastapi
+    #   mcp
+    #   sse-starlette
+tenacity==9.2.1
+    # via langchain-core
+tiktoken==0.14.0
+    # via langchain-openai
+truststore==0.10.5
+    # via
+    #   httpcore2
+    #   httpx2
+typing-extensions==4.16.0
+    # via
+    #   alembic
+    #   anyio
+    #   click-repl
+    #   fastapi
+    #   grpcio
+    #   httpx2
+    #   langchain-core
+    #   langchain-mcp-adapters
+    #   langchain-protocol
+    #   langsmith
+    #   mcp
+    #   openai
+    #   opentelemetry-api
+    #   psycopg
+    #   pydantic
+    #   pydantic-core
+    #   pydantic-settings
+    #   referencing
+    #   sqlalchemy
+    #   starlette
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   mcp
+    #   pydantic
+    #   pydantic-settings
+tzdata==2026.5
+    # via kombu
+tzlocal==5.4.4
+    # via celery
+urllib3==2.8.0
+    # via
+    #   qdrant-client
+    #   requests
+uuid-utils==0.17.1
+    # via
+    #   langchain-core
+    #   langsmith
+uvicorn==0.54.0
+    # via
+    #   watchtower-backend (pyproject.toml)
+    #   mcp
+vine==5.1.0
+    # via
+    #   amqp
+    #   celery
+    #   kombu
+wcwidth==0.9.2
+    # via prompt-toolkit
+websockets==16.1.1
+    # via
+    #   langgraph-sdk
+    #   langsmith
+xxhash==4.0.1
+    # via
+    #   langgraph
+    #   langsmith
+zstandard==0.25.0
+    # via langsmith
