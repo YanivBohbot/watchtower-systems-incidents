@@ -121,8 +121,11 @@ deterministic dispatcher; the normal launch wires the real dependencies.
 perform mutations. Viewers can read the shared workspace. `public()` serializes
 the public columns and strips hashes and internal storage keys.
 
-`bounded_upload()` reads the file in blocks, rejects empty files and enforces the
-byte limit. The extension is a first check; the video content is actually decoded
+`receive_upload()` streams the file in 1 MiB blocks to a temporary file under
+`data_dir/uploads`, computes its SHA-256 on the fly, rejects empty files and
+enforces the byte limit; on any failure the temporary file is deleted. Accepted
+files are moved into storage with `LocalStorage.put_file()`, so an upload never
+sits in memory. The extension is a first check; the video content is actually decoded
 in the worker, and PDFs are actually parsed at ingestion.
 
 `upload_video()` validates the zone, stores the file under a UUID key, then saves
@@ -135,9 +138,10 @@ second check through an SQL constraint handles concurrent uploads: the loser
 falls back to the existing document and deletes its temporary file.
 
 Content routes first look up a video or incident ID in SQL, after authentication.
-They never accept an arbitrary file key. In this V1, the video response is loaded
-into memory; objects are capped at 100 MB. A high-load version would use
-streaming and Range requests, or signed storage URLs after the permission check.
+They never accept an arbitrary file key. Videos are served with `FileResponse`,
+which streams the file and answers Range requests (`206 Partial Content`). The
+React client still downloads a video as one authenticated blob, so seeking in
+the browser only benefits once a later milestone switches it to a streaming URL.
 
 `investigate()` creates the investigation and its job. `review()` performs a
 conditional update on `awaiting_review`, so two concurrent clicks cannot produce

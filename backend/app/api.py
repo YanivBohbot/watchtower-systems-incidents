@@ -3,6 +3,7 @@
 import hashlib
 import json
 import logging
+import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import uuid4
@@ -10,7 +11,7 @@ from uuid import uuid4
 import jwt
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select, update
@@ -101,15 +102,27 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
         with sessions() as db:
             return db.get(Job, job_id).kind
 
-    async def bounded_upload(file: UploadFile):
-        content = bytearray()
-        while part := await file.read(1024 * 1024):
-            content.extend(part)
-            if len(content) > cfg.max_upload_mb * 1024 * 1024:
-                raise HTTPException(413, "File exceeds upload limit")
-        if not content:
-            raise HTTPException(422, "Empty file")
-        return bytes(content)
+    async def receive_upload(file: UploadFile) -> tuple[Path, str]:
+        """Stream the upload to a temporary file under data_dir; return its path and SHA-256."""
+        uploads = cfg.data_dir / "uploads"
+        uploads.mkdir(parents=True, exist_ok=True)
+        digest, size = hashlib.sha256(), 0
+        with tempfile.NamedTemporaryFile(dir=uploads, delete=False) as temp:
+            path = Path(temp.name)
+            try:
+                while part := await file.read(1024 * 1024):
+                    size += len(part)
+                    if size > cfg.max_upload_mb * 1024 * 1024:
+                        raise HTTPException(413, "File exceeds upload limit")
+                    digest.update(part)
+                    temp.write(part)
+                if not size:
+                    raise HTTPException(422, "Empty file")
+            except BaseException:
+                temp.close()
+                path.unlink(missing_ok=True)
+                raise
+        return path, digest.hexdigest()
 
     @app.get("/api/health")
     def health():
@@ -141,10 +154,10 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
         ext = Path(file.filename or "").suffix.lower()
         if ext not in (".mp4", ".mov", ".avi", ".webm"):
             raise HTTPException(422, "Supported videos: mp4, mov, avi, webm")
-        content = await bounded_upload(file)
+        upload, _ = await receive_upload(file)
         video_id, job_id = uid(), uid()
         key = f"videos/{video_id}{ext}"
-        storage.put(key, content)
+        storage.put_file(key, upload)
         with sessions() as db:
             video = Video(id=video_id, name=Path(file.filename).name[:255], storage_key=key, zone=parsed.model_dump())
             db.add_all([video, Job(id=job_id, kind="video", resource_id=video_id)])
@@ -159,9 +172,8 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
             video = db.get(Video, video_id)
             if video is None:
                 raise HTTPException(404, "Video not found")
-            return Response(
-                storage.read(video.storage_key), media_type="video/" + Path(video.storage_key).suffix.lstrip(".")
-            )
+            key = video.storage_key
+        return FileResponse(storage.path(key), media_type="video/" + Path(key).suffix.lstrip("."))
 
     @app.get("/api/jobs")
     def jobs(user=Depends(current)):
@@ -191,15 +203,15 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None):
     async def upload_document(file: UploadFile = File(...), user=Depends(operator)):
         if Path(file.filename or "").suffix.lower() not in (".pdf", ".txt"):
             raise HTTPException(422, "Use a text PDF or UTF-8 TXT")
-        content = await bounded_upload(file)
-        sha = hashlib.sha256(content).hexdigest()
+        upload, sha = await receive_upload(file)
         with sessions() as db:
             existing = db.scalar(select(Document).where(Document.sha256 == sha))
             if existing:
+                upload.unlink(missing_ok=True)
                 return public(existing)
             doc_id, job_id = uid(), uid()
             key = f"documents/{doc_id}{Path(file.filename).suffix.lower()}"
-            storage.put(key, content)
+            storage.put_file(key, upload)
             doc = Document(id=doc_id, name=Path(file.filename).name[:255], storage_key=key, sha256=sha)
             db.add_all([doc, Job(id=job_id, kind="document", resource_id=doc_id)])
             try:

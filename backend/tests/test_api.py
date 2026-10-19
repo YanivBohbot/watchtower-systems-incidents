@@ -15,7 +15,11 @@ from app.db import Base, User, make_sessions
 
 @pytest.fixture
 def app_client(tmp_path):
-    cfg = Settings(jwt_secret="x" * 40, data_dir=tmp_path, database_url=f"sqlite:///{tmp_path}/api.db")
+    yield from make_client(tmp_path)
+
+
+def make_client(tmp_path, **overrides):
+    cfg = Settings(jwt_secret="x" * 40, data_dir=tmp_path, database_url=f"sqlite:///{tmp_path}/api.db", **overrides)
     engine, sessions = make_sessions(cfg.database_url)
     Base.metadata.create_all(engine)
     with sessions() as db:
@@ -98,14 +102,14 @@ def test_document_deduplication_and_retry_role(app_client):
 def test_concurrent_identical_documents_return_same_resource(app_client, monkeypatch):
     client, queued = app_client
     barrier = Barrier(2)
-    original = LocalStorage.put
+    original = LocalStorage.put_file
 
-    def synchronized_put(self, key, content):
+    def synchronized_put(self, key, source):
         if key.startswith("documents/"):
             barrier.wait(timeout=5)
-        return original(self, key, content)
+        return original(self, key, source)
 
-    monkeypatch.setattr(LocalStorage, "put", synchronized_put)
+    monkeypatch.setattr(LocalStorage, "put_file", synchronized_put)
     headers = {"Authorization": "Bearer " + token_for("op", "x" * 40)}
 
     def upload(_):
@@ -117,3 +121,25 @@ def test_concurrent_identical_documents_return_same_resource(app_client, monkeyp
     assert [r.status_code for r in responses] == [201, 201]
     assert responses[0].json()["id"] == responses[1].json()["id"]
     assert len(queued) == 1
+
+
+ZONE = '{"x1":0,"y1":0,"x2":1,"y2":1,"dwell_seconds":2}'
+
+
+def test_video_content_supports_range_requests(app_client):
+    client, _ = app_client
+    headers = login(client)
+    files = {"file": ("walk.mp4", io.BytesIO(b"0123456789" * 100), "video/mp4")}
+    video = client.post("/api/videos", headers=headers, files=files, data={"zone": ZONE}).json()
+    response = client.get(f"/api/videos/{video['id']}/content", headers={**headers, "Range": "bytes=0-9"})
+    assert response.status_code == 206
+    assert response.content == b"0123456789"
+
+
+def test_oversized_upload_leaves_no_temp_file(tmp_path):
+    for client, queued in make_client(tmp_path, max_upload_mb=1):
+        files = {"file": ("big.mp4", io.BytesIO(b"x" * (1024 * 1024 + 1)), "video/mp4")}
+        response = client.post("/api/videos", headers=login(client), files=files, data={"zone": ZONE})
+        assert response.status_code == 413
+        assert queued == []
+    assert list((tmp_path / "uploads").glob("*")) == []

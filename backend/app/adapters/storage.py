@@ -21,6 +21,12 @@ class LocalStorage:
         temp.write_bytes(content)
         temp.replace(target)
 
+    def put_file(self, key: str, source: Path) -> None:
+        """Move an already written file into storage (same filesystem, atomic replace)."""
+        target = self.path(key)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        Path(source).replace(target)
+
     def read(self, key: str) -> bytes:
         return self.path(key).read_bytes()
 
