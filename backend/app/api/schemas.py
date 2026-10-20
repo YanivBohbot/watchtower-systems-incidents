@@ -17,4 +17,6 @@ class Review(BaseModel):
 
 def public(row) -> dict:
     """Serialize an ORM row without password hashes, storage keys or camera sources."""
-    return {column.name: getattr(row, column.name) for column in row.__table__.columns if column.name not in HIDDEN_COLUMNS}
+    return {
+        column.name: getattr(row, column.name) for column in row.__table__.columns if column.name not in HIDDEN_COLUMNS
+    }

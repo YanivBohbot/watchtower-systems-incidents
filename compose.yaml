@@ -69,7 +69,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    # LangGraph checkpoints live in PostgreSQL (see app/agent/checkpoints.py).
+    # LangGraph checkpoints live in PostgreSQL (see app/investigation/checkpoints.py).
     command: [celery, -A, app.workers.job_queue:celery, worker, -Q, investigation, --concurrency=1, --loglevel=INFO]
   cameras:
     <<: *backend

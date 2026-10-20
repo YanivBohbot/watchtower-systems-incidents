@@ -9,7 +9,7 @@
 | `worker` | Celery, `processing` queue, concurrency 1 | SQL jobs and files |
 | `investigator` | Celery, `investigation` queue, concurrency 1 | PostgreSQL checkpoints, tickets and SQL |
 | `scheduler` | Celery Beat, outbox sweep every 30 seconds | Schedule file |
-| `cameras` | `python -m app.live`, one thread per enabled camera | Alerts in SQL, snapshots in files |
+| `cameras` | `python -m app.workers.camera_process`, one thread per enabled camera | Alerts in SQL, snapshots in files |
 | `migrate` | Alembic, single run | PostgreSQL schema |
 | `postgres` | Business data | `postgres-data` volume |
 | `redis` | Task broker and live hub (latest frames, camera status, alert events) | SQL jobs and alerts remain the durable source |
@@ -157,14 +157,14 @@ uvicorn app.main:app --reload
 In two more terminals with the same environment:
 
 ```bash
-celery -A app.tasks:celery worker -Q processing --concurrency=1 --loglevel=INFO
-celery -A app.tasks:celery worker -Q investigation --concurrency=1 --loglevel=INFO
+celery -A app.workers.job_queue:celery worker -Q processing --concurrency=1 --loglevel=INFO
+celery -A app.workers.job_queue:celery worker -Q investigation --concurrency=1 --loglevel=INFO
 ```
 
 Then a fourth one for Beat:
 
 ```bash
-celery -A app.tasks:celery beat --loglevel=INFO
+celery -A app.workers.job_queue:celery beat --loglevel=INFO
 ```
 
 From `frontend`, run `npm ci` then `npm run dev`. Vite forwards `/api` to

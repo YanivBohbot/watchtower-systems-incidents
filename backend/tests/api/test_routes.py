@@ -1,18 +1,17 @@
 import io
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from threading import Barrier
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.api.application import create_app
-from app.core.security import hash_password
-from app.core.security import token_for
-from app.integrations.local_storage import LocalStorage
 from app.core.config import Settings
+from app.core.security import hash_password, token_for
 from app.database.models import Base, Job, User
 from app.database.session import make_sessions
+from app.integrations.local_storage import LocalStorage
 
 
 @pytest.fixture
@@ -162,8 +161,8 @@ def test_retry_resets_attempts(app_client):
 
 @pytest.fixture
 def live_client(tmp_path):
-    from app.integrations.live_hub import MemoryHub
     from app.database.models import Alert, Camera, Site
+    from app.integrations.live_hub import MemoryHub
 
     hub = MemoryHub()
     cfg = Settings(jwt_secret="x" * 40, data_dir=tmp_path, database_url=f"sqlite:///{tmp_path}/api.db")

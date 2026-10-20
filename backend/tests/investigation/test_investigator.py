@@ -5,10 +5,10 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
-from app.investigation.investigator import Investigator
 from app.core.config import Settings
 from app.database.models import Base, Incident, Video
 from app.database.session import make_sessions
+from app.investigation.investigator import Investigator
 
 
 class ScriptedModel(BaseChatModel):

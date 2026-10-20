@@ -7,8 +7,8 @@ from pathlib import Path
 
 from sqlalchemy import select, update
 
-from app.core.security import hash_password
 from app.core.config import settings
+from app.core.security import hash_password
 from app.database.models import Job, User
 from app.database.session import make_sessions
 from app.services.site_seeding import seed_site

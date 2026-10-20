@@ -7,12 +7,12 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from app.integrations.looped_video_source import LoopedVideoSource
-from app.integrations.live_hub import RedisHub
-from app.integrations.local_storage import LocalStorage
 from app.core.config import settings
 from app.database.models import Camera
 from app.database.session import make_sessions
+from app.integrations.live_hub import RedisHub
+from app.integrations.local_storage import LocalStorage
+from app.integrations.looped_video_source import LoopedVideoSource
 from app.services.camera_monitor import CameraRunner
 
 log = logging.getLogger(__name__)

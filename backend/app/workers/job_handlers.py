@@ -6,6 +6,9 @@ import json
 from langchain_openai import OpenAIEmbeddings
 from langgraph.types import Command
 
+from app.core.config import settings
+from app.database.models import Investigation
+from app.database.session import make_sessions
 from app.integrations.local_storage import LocalStorage
 from app.integrations.mcp_tickets import McpTickets
 from app.integrations.qdrant_index import QdrantIndex
@@ -13,9 +16,6 @@ from app.integrations.yolo_detector import YoloDetector
 from app.investigation.checkpoints import open_checkpointer
 from app.investigation.investigator import Investigator
 from app.investigation.workflow import build_workflow
-from app.core.config import settings
-from app.database.models import Investigation
-from app.database.session import make_sessions
 from app.services.knowledge_base import KnowledgeService
 from app.services.video_analysis import VideoService
 

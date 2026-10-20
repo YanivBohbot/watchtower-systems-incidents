@@ -4,8 +4,8 @@ import pytest
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import Command
 
-from app.investigation.workflow import build_workflow
 from app.investigation.schemas import Report, validate_report
+from app.investigation.workflow import build_workflow
 
 
 def test_report_rejects_invented_citation():

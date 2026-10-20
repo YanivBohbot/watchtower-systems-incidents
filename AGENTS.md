@@ -2,7 +2,7 @@
 
 ## Project Structure & Architecture
 
-WatchTower analyzes uploaded videos and supports human-reviewed incident investigations. `backend/app/` contains the FastAPI API, domain rules, adapters, video and knowledge services, and LangGraph investigation workflow. Database migrations live in `backend/migrations/`; backend tests live in `backend/tests/`. The React/TypeScript frontend is in `frontend/src/`, with Playwright tests in `frontend/tests/`. `mcp_server/` implements the ticket server; `skills/`, `examples/`, `scripts/`, and `docs/` hold agent instructions, sample procedures, utilities, and project documentation.
+WatchTower analyzes uploaded videos and live cameras and supports human-reviewed incident investigations. `backend/app/` is split by responsibility: `core/` (settings, security), `database/` (tables, sessions), `domain/` (pure rules and interfaces), `api/` (app factory, dependencies, one router per domain in `api/routes/`), `services/` (use cases), `investigation/` (LangGraph workflow and agent), `integrations/` (external adapters) and `workers/` (Celery job queue, job handlers, camera process). `docs/GUIDE.md` explains each file. Database migrations live in `backend/migrations/`; backend tests in `backend/tests/` mirror the `app/` folders. The React/TypeScript frontend is in `frontend/src/` (`api/`, `pages/`, `components/`, `styles/`), with Playwright tests in `frontend/tests/`. `mcp_server/` implements the ticket server; `skills/`, `examples/`, `scripts/`, and `docs/` hold agent instructions, sample procedures and sites, utilities, and project documentation. New modules go in the folder that matches their role, and `backend/tests/test_layout.py` lists the documented modules.
 
 ## Build, Test & Development Commands
 

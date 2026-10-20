@@ -1,15 +1,16 @@
 import os
+
 import cv2
 import numpy as np
 import pytest
 from sqlalchemy import select
 
-from app.integrations.looped_video_source import LoopedVideoSource
-from app.integrations.live_hub import MemoryHub
-from app.integrations.local_storage import LocalStorage
-from app.integrations.yolo_detector import TrackedObject
 from app.database.models import Alert, Base, Camera, Site
 from app.database.session import make_sessions
+from app.integrations.live_hub import MemoryHub
+from app.integrations.local_storage import LocalStorage
+from app.integrations.looped_video_source import LoopedVideoSource
+from app.integrations.yolo_detector import TrackedObject
 from app.services.camera_monitor import CameraRunner
 
 ZONE = {"x1": 0, "y1": 0, "x2": 1, "y2": 1, "dwell_seconds": 1}
