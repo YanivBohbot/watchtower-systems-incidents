@@ -6,8 +6,9 @@ from datetime import datetime, timedelta, timezone
 from celery import Celery
 from sqlalchemy import select, update
 
-from app.config import settings
-from app.db import Job, make_sessions, now
+from app.core.config import settings
+from app.database.models import Job, now
+from app.database.session import make_sessions
 
 # A live worker cannot hold a job past run_job's hard time_limit (960 s), so a job
 # still "running" after this lease belongs to a worker that died.

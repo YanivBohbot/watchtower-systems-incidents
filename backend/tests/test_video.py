@@ -4,7 +4,8 @@ import pytest
 from sqlalchemy import select
 
 from app.adapters.storage import LocalStorage
-from app.db import Base, Incident, Video, make_sessions
+from app.database.models import Base, Incident, Video
+from app.database.session import make_sessions
 from app.services.video import VideoService
 from app.adapters.vision import TrackedObject
 

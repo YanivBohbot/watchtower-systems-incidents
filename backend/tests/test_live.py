@@ -5,7 +5,8 @@ import pytest
 from pydantic import ValidationError
 from sqlalchemy import select
 
-from app.db import Base, Camera, Site, make_sessions
+from app.database.models import Base, Camera, Site
+from app.database.session import make_sessions
 from app.services.sites import seed_site
 
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "site-horizon.json"
@@ -57,7 +58,7 @@ def test_example_site_is_fictional_and_valid(sessions):
 
 def test_seed_site_cli(tmp_path, monkeypatch):
     from app import cli
-    from app.config import settings
+    from app.core.config import settings
 
     monkeypatch.setenv("JWT_SECRET", "cli-test-secret-not-for-production-123456")
     monkeypatch.setenv("DATA_DIR", str(tmp_path))

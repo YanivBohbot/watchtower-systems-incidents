@@ -21,10 +21,11 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
 from app.adapters.storage import LocalStorage
-from app.auth import token_for, verify_password
-from app.config import Settings
-from app.db import Alert, Camera, Document, Incident, Investigation, Job, Site, User, Video, make_sessions, uid
-from app.domain.rules import Zone
+from app.core.security import token_for, verify_password
+from app.core.config import Settings
+from app.database.models import Alert, Camera, Document, Incident, Investigation, Job, Site, User, Video, uid
+from app.database.session import make_sessions
+from app.domain.dwell_rule import Zone
 
 log = logging.getLogger(__name__)
 

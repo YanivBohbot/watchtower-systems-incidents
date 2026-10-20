@@ -8,9 +8,10 @@ import numpy as np
 
 from app.adapters.live import MemoryHub
 from app.api import create_app
-from app.auth import hash_password
-from app.config import Settings
-from app.db import Alert, Base, Camera, Site, User, make_sessions
+from app.core.security import hash_password
+from app.core.config import Settings
+from app.database.models import Alert, Base, Camera, Site, User
+from app.database.session import make_sessions
 from app.services.live import alert_payload
 
 

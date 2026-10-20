@@ -10,8 +10,9 @@ from sqlalchemy import select
 from app.adapters.camera import LoopedVideoSource
 from app.adapters.live import RedisHub
 from app.adapters.storage import LocalStorage
-from app.config import settings
-from app.db import Camera, make_sessions
+from app.core.config import settings
+from app.database.models import Camera
+from app.database.session import make_sessions
 from app.services.live import CameraRunner
 
 log = logging.getLogger(__name__)

@@ -4,9 +4,9 @@ from uuid import NAMESPACE_URL, uuid5
 from pypdf import PdfReader
 from sqlalchemy import delete, select
 
-from app.db import Chunk, Document
-from app.domain.ports import Embedder, Storage, VectorIndex
-from app.domain.text import chunk_text
+from app.database.models import Chunk, Document
+from app.domain.interfaces import Embedder, Storage, VectorIndex
+from app.domain.text_chunking import chunk_text
 
 
 class KnowledgeService:

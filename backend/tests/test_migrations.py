@@ -6,7 +6,8 @@ from pathlib import Path
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 
-from app.db import Base, make_sessions
+from app.database.models import Base
+from app.database.session import make_sessions
 
 
 def test_fresh_alembic_schema_matches_models(tmp_path):

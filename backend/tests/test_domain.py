@@ -1,7 +1,7 @@
 import pytest
 
-from app.domain.rules import DwellRule, Observation, Zone
-from app.domain.text import chunk_text
+from app.domain.dwell_rule import DwellRule, Observation, Zone
+from app.domain.text_chunking import chunk_text
 
 
 def test_dwell_uses_video_time_and_emits_once():

@@ -13,8 +13,9 @@ from app.adapters.vision import YoloDetector
 from app.agent.checkpoints import open_checkpointer
 from app.agent.investigator import Investigator
 from app.agent.workflow import build_workflow
-from app.config import settings
-from app.db import Investigation, make_sessions
+from app.core.config import settings
+from app.database.models import Investigation
+from app.database.session import make_sessions
 from app.services.knowledge import KnowledgeService
 from app.services.video import VideoService
 

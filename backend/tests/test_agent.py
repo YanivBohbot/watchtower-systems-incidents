@@ -6,8 +6,9 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 from app.agent.investigator import Investigator
-from app.config import Settings
-from app.db import Base, Incident, Video, make_sessions
+from app.core.config import Settings
+from app.database.models import Base, Incident, Video
+from app.database.session import make_sessions
 
 
 class ScriptedModel(BaseChatModel):

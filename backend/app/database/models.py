@@ -1,8 +1,10 @@
+"""ORM tables for users, videos, jobs, incidents, procedures, investigations, sites, cameras and alerts."""
+
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, UniqueConstraint, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
+from sqlalchemy import JSON, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 def uid():
@@ -114,17 +116,3 @@ class Alert(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     snapshot_key: Mapped[str]
     details: Mapped[dict] = mapped_column(JSON)
-
-
-def make_sessions(url: str):
-    kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {}
-    engine = create_engine(url, **kwargs)
-    if url.startswith("sqlite"):
-        from sqlalchemy import event
-
-        @event.listens_for(engine, "connect")
-        def sqlite_options(connection, _):
-            connection.execute("PRAGMA foreign_keys=ON")
-            connection.execute("PRAGMA busy_timeout=10000")
-
-    return engine, sessionmaker(engine, expire_on_commit=False)

@@ -7,11 +7,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api import create_app
-from app.auth import hash_password
-from app.auth import token_for
+from app.core.security import hash_password
+from app.core.security import token_for
 from app.adapters.storage import LocalStorage
-from app.config import Settings
-from app.db import Base, Job, User, make_sessions
+from app.core.config import Settings
+from app.database.models import Base, Job, User
+from app.database.session import make_sessions
 
 
 @pytest.fixture
@@ -162,7 +163,7 @@ def test_retry_resets_attempts(app_client):
 @pytest.fixture
 def live_client(tmp_path):
     from app.adapters.live import MemoryHub
-    from app.db import Alert, Camera, Site
+    from app.database.models import Alert, Camera, Site
 
     hub = MemoryHub()
     cfg = Settings(jwt_secret="x" * 40, data_dir=tmp_path, database_url=f"sqlite:///{tmp_path}/api.db")

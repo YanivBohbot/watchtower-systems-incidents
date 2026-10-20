@@ -8,7 +8,8 @@ from app.adapters.camera import LoopedVideoSource
 from app.adapters.live import MemoryHub
 from app.adapters.storage import LocalStorage
 from app.adapters.vision import TrackedObject
-from app.db import Alert, Base, Camera, Site, make_sessions
+from app.database.models import Alert, Base, Camera, Site
+from app.database.session import make_sessions
 from app.services.live import CameraRunner
 
 ZONE = {"x1": 0, "y1": 0, "x2": 1, "y2": 1, "dwell_seconds": 1}

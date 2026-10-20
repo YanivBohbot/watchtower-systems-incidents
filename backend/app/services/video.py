@@ -4,8 +4,8 @@ from pathlib import Path
 import cv2
 from sqlalchemy import select
 
-from app.db import Incident, Video, uid
-from app.domain.rules import DwellRule, Observation, Zone
+from app.database.models import Incident, Video, uid
+from app.domain.dwell_rule import DwellRule, Observation, Zone
 from app.services.annotate import annotate, encode_jpeg
 
 

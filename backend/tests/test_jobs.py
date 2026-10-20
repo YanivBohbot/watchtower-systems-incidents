@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
-from app.config import settings
-from app.db import Base, Job, make_sessions
+from app.core.config import settings
+from app.database.models import Base, Job
+from app.database.session import make_sessions
 
 
 @pytest.fixture

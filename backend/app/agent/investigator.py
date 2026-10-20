@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from sqlalchemy import select
 
 from app.agent.schemas import Report, validate_report
-from app.db import Incident
+from app.database.models import Incident
 
 
 class Investigator:

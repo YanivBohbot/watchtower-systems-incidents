@@ -4,8 +4,8 @@ import logging
 import time
 from datetime import datetime, timezone
 
-from app.db import Alert, uid
-from app.domain.rules import DwellRule, Observation, Zone
+from app.database.models import Alert, uid
+from app.domain.dwell_rule import DwellRule, Observation, Zone
 from app.services.annotate import annotate, encode_jpeg
 
 log = logging.getLogger(__name__)

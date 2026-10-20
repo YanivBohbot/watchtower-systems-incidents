@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from app.db import Base, Document, make_sessions
+from app.database.models import Base, Document
+from app.database.session import make_sessions
 from app.adapters.storage import LocalStorage
 from app.services.knowledge import KnowledgeService
 

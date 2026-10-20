@@ -1,3 +1,5 @@
+"""Application settings, read from environment variables and `.env`."""
+
 from functools import lru_cache
 from pathlib import Path
 

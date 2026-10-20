@@ -3,8 +3,8 @@
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from app.db import Camera, Site
-from app.domain.rules import Zone
+from app.database.models import Camera, Site
+from app.domain.dwell_rule import Zone
 
 
 class CameraSeed(BaseModel):

@@ -5,9 +5,10 @@ from pathlib import Path
 
 from sqlalchemy import select, update
 
-from app.auth import hash_password
-from app.config import settings
-from app.db import Job, User, make_sessions
+from app.core.security import hash_password
+from app.core.config import settings
+from app.database.models import Job, User
+from app.database.session import make_sessions
 from app.services.sites import seed_site
 
 

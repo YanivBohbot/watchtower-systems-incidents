@@ -1,3 +1,5 @@
+"""Password hashing (PBKDF2) and signed access tokens (JWT)."""
+
 import base64
 import hashlib
 import hmac
