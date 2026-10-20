@@ -66,7 +66,8 @@ OPERATIONS.md.
 | Playwright | **3 scenarios passed** | Chromium, real test FastAPI server with an in-memory hub: camera wall, alert pushed over SSE without reload, dismiss; alert reaching the banner by polling while the event stream is blocked; existing workspace scenario |
 | Camera runner with real video decoding | **Passed** | Generated MJPG clips decoded by OpenCV; the detector is a deterministic double |
 | Redis hub | **Not run** | `test_redis_hub_round_trip` is skipped without `WATCHTOWER_TEST_REDIS_URL` |
-| Real YOLO on a live camera, `python -m app.live` | **Not run** | No end-to-end run with real footage, Redis and the browser together |
+| Live loop with real YOLO + ByteTrack and the browser | **Passed (without Redis)** | One local process ran the API and two camera runners on the CPU (YOLOv8n, Torch 2.14.1 CPU): a looped 8 s clip built from the Ultralytics reference image, and a camera whose file is missing. About 5 frames analyzed per second; alerts raised from real detections; Chromium through Vite signed in, saw the annotated tile, the missing camera as "Source error", the banner pushed about 3 s after the wall opened, and the alert snapshot. The in-memory hub stood in for Redis |
+| `python -m app.live` with Redis | **Not run** | Same code path minus the Redis hub; no Redis server available |
 | Docker image and `cameras` service | **Not run** | Docker is not installed in the working environment |
 
 Live detection is people only in this milestone. No latency or accuracy figure is
