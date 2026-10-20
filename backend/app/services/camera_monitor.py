@@ -130,6 +130,8 @@ class CameraRunner:
             "box": [obj.x1, obj.y1, obj.x2, obj.y2],
             "confidence": obj.confidence,
             "zone": self.zone,
+            "point": "bottom_center",
+            "model": getattr(self.detector, "model_path", type(self.detector).__name__),
         }
         with self.sessions() as db:
             alert = Alert(id=alert_id, camera_id=self.camera_id, kind="person_dwell", snapshot_key=key, details=details)

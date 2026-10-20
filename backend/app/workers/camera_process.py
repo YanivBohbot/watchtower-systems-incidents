@@ -49,7 +49,7 @@ def main():
         sessions,
         LocalStorage(cfg.data_dir / "files"),
         RedisHub(cfg.redis_url),
-        lambda: YoloDetector(cfg.yolo_model),
+        lambda: YoloDetector(cfg.yolo_model, confidence=cfg.yolo_confidence),
         cfg.live_analysis_fps,
         cfg.cameras_dir or cfg.data_dir / "cameras",
     )

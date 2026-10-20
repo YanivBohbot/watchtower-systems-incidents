@@ -106,6 +106,18 @@ new ones as follows (`backend/app/` prefix omitted).
 | Docker images, `docker compose up` | **Not run** | Not built in this session, to stay within the machine's memory; the Dockerfile only references `app.main:app`, which the boot check covers |
 | Redis, PostgreSQL, live OpenAI | **Not run** | Same limits as milestone 2 |
 
+## Vision settings — October 20, 2026
+
+The detector score threshold becomes `YOLO_CONFIDENCE`, and live alerts record the tracked point and model like incidents do.
+
+| Check | Result | Actual scope |
+|---|---|---|
+| Python suite `pytest -q` (Python 3.12, Windows) | **137 passed, 2 skipped** | Adds the threshold passed to the model (Ultralytics replaced by a fake module), its default, its bounds and environment variable, the video job wiring from settings, and the point and model in live alert details |
+| Ruff | **Passed** | `ruff check app tests migrations` |
+| Real YOLO + ByteTrack (`scripts/smoke_vision.py`) | **Passed** | YOLOv8n on CPU: three people tracked on the Ultralytics reference image |
+| Video pipeline with real YOLO | **Passed** | 3 s MJPG clip of the reference image, 1 s dwell: three incidents at 1.0 s (scores 0.83 to 0.87) with JPEG captures, none duplicated on a second run; with the threshold at 0.86, one incident only |
+| Camera process wiring | **Read, not run** | `camera_process.main()` passes the same setting; it needs Redis to start |
+
 ## Reproducing the checks
 
 ```bash

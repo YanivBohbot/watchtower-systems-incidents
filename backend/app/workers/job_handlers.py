@@ -41,7 +41,7 @@ def execute(kind, resource_id, progress):
             VideoService(
                 sessions,
                 LocalStorage(cfg.data_dir / "files"),
-                lambda: YoloDetector(cfg.yolo_model),
+                lambda: YoloDetector(cfg.yolo_model, confidence=cfg.yolo_confidence),
                 cfg.max_video_seconds,
                 cfg.max_video_pixels,
             ).analyze(resource_id, progress)
