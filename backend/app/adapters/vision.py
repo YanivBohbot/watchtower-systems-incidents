@@ -22,6 +22,12 @@ class YoloDetector:
         self.model_path = model_path
         self.model = YOLO(model_path)
 
+    def reset(self) -> None:
+        """Forget tracks (for example when a looped video restarts) without reloading the weights."""
+        predictor = getattr(self.model, "predictor", None)
+        for tracker in getattr(predictor, "trackers", None) or []:
+            tracker.reset()
+
     def track(self, frame) -> list[TrackedObject]:
         result = self.model.track(frame, persist=True, classes=[0], conf=0.5, tracker="bytetrack.yaml", verbose=False)[
             0

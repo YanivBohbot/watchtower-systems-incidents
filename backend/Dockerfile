@@ -10,6 +10,7 @@ COPY backend ./
 RUN pip install --no-deps -e . && pip install 'ultralytics==8.4.182' 'lap==0.5.13'
 COPY mcp_server /project/mcp_server
 COPY skills /project/skills
+COPY examples /project/examples
 RUN useradd --uid 10001 --create-home app && mkdir -p /data && chown -R app:app /data /project
 USER app
 EXPOSE 8000

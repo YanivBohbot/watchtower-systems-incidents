@@ -334,6 +334,35 @@ jobs still `queued`. The `processing` queue handles video and documents;
 `investigation` handles the agent and the human resume. There is no
 exactly-once execution guarantee.
 
+## 9b. Live cameras
+
+### `backend/app/services/sites.py`
+
+`seed_site()` validates a JSON site description with Pydantic (zones reuse the
+`Zone` model) and creates or updates the site and its cameras by name.
+
+### `backend/app/adapters/camera.py`
+
+`LoopedVideoSource` wraps OpenCV: `read()` returns the next frame and rewinds at
+the end (incrementing `loops`), `skip(n)` grabs frames without decoding them.
+It implements the `FrameSource` port, so an RTSP source could replace it.
+
+### `backend/app/services/live.py`
+
+`CameraRunner.step()` computes which frame matches the wall-clock time, skips
+the late ones, runs the detector, publishes the annotated frame and status, and
+feeds the `DwellRule`. When the rule fires, `_raise_alert()` stores a snapshot,
+commits an `Alert` row, then publishes the event. Any error marks the camera
+`error` instead of raising. `run()` paces the steps and retries failed sources.
+`services/annotate.py` holds the drawing code shared with uploaded videos.
+
+### `backend/app/adapters/live.py` and `backend/app/live.py`
+
+`RedisHub` (production) and `MemoryHub` (tests) implement the `LiveHub` port.
+`app/live.py` builds one runner per enabled camera and runs each in a thread.
+In `api.py`, the live routes use the hub; `/api/live/events` turns the alert
+channel into Server-Sent Events.
+
 ## 10. The frontend, file by file
 
 | File | Explanation |

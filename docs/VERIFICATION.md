@@ -55,6 +55,24 @@ OPERATIONS.md.
 | PostgreSQL checkpointer | **Not run** | `test_postgres_checkpointer_round_trip` is skipped without `WATCHTOWER_TEST_POSTGRES_URL` |
 | Docker image with the updated lock | **Not run** | `langgraph-checkpoint-postgres==3.2.0` resolved with uv for Linux/Python 3.12 only |
 
+## Milestone 2 (live cameras) — October 20, 2026
+
+| Check | Result | Actual scope |
+|---|---|---|
+| Python suite `pytest -q` (Python 3.12, Windows) | **52 passed, 2 skipped** | Adds site seeding, camera runner pacing, slow analysis, loop restart, source errors, live hub outage, live API routes, SSE stream, 503 when the hub is down |
+| Ruff | **Passed** | `ruff check app tests migrations` |
+| Alembic migration `0003` | **Passed on SQLite** | Schema comparison test; not run against PostgreSQL |
+| React build `npm run build` | **Passed** | TypeScript check and Vite bundle |
+| Playwright | **3 scenarios passed** | Chromium, real test FastAPI server with an in-memory hub: camera wall, alert pushed over SSE without reload, dismiss; alert reaching the banner by polling while the event stream is blocked; existing workspace scenario |
+| Camera runner with real video decoding | **Passed** | Generated MJPG clips decoded by OpenCV; the detector is a deterministic double |
+| Redis hub | **Not run** | `test_redis_hub_round_trip` is skipped without `WATCHTOWER_TEST_REDIS_URL` |
+| Live loop with real YOLO + ByteTrack and the browser | **Passed (without Redis)** | One local process ran the API and two camera runners on the CPU (YOLOv8n, Torch 2.14.1 CPU): a looped 8 s clip built from the Ultralytics reference image, and a camera whose file is missing. About 5 frames analyzed per second; alerts raised from real detections; Chromium through Vite signed in, saw the annotated tile, the missing camera as "Source error", the banner pushed about 3 s after the wall opened, and the alert snapshot. The in-memory hub stood in for Redis |
+| `python -m app.live` with Redis | **Not run** | Same code path minus the Redis hub; no Redis server available |
+| Docker image and `cameras` service | **Not run** | Docker is not installed in the working environment |
+
+Live detection is people only in this milestone. No latency or accuracy figure is
+claimed yet; measurements are planned for milestone 8.
+
 ## Reproducing the checks
 
 ```bash
