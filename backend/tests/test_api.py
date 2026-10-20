@@ -6,7 +6,7 @@ from threading import Barrier
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api import create_app
+from app.api.application import create_app
 from app.core.security import hash_password
 from app.core.security import token_for
 from app.integrations.local_storage import LocalStorage
@@ -275,3 +275,81 @@ def test_live_events_end_cleanly_when_hub_fails_mid_stream(live_client):
     with client.stream("GET", "/api/live/events", headers=headers) as response:
         assert list(response.iter_lines()) == [": connected", ""]
     assert failing.closed
+
+
+EXPECTED_ROUTES = {
+    ("GET", "/api/health"),
+    ("POST", "/api/auth/login"),
+    ("GET", "/api/me"),
+    ("GET", "/api/videos"),
+    ("POST", "/api/videos"),
+    ("GET", "/api/videos/{video_id}/content"),
+    ("GET", "/api/jobs"),
+    ("POST", "/api/jobs/{job_id}/retry"),
+    ("GET", "/api/documents"),
+    ("POST", "/api/documents"),
+    ("GET", "/api/incidents"),
+    ("GET", "/api/incidents/{incident_id}/evidence"),
+    ("POST", "/api/incidents/{incident_id}/investigate"),
+    ("GET", "/api/investigations"),
+    ("POST", "/api/investigations/{investigation_id}/review"),
+    ("GET", "/api/cameras"),
+    ("GET", "/api/cameras/{camera_id}/frame"),
+    ("GET", "/api/alerts"),
+    ("GET", "/api/alerts/{alert_id}/snapshot"),
+    ("GET", "/api/live/events"),
+}
+
+
+def test_route_table_is_unchanged(app_client):
+    client, _ = app_client
+    paths = client.get("/api/openapi.json").json()["paths"]
+    assert {(method.upper(), path) for path, methods in paths.items() for method in methods} == EXPECTED_ROUTES
+
+
+WRITE_ROUTES = [
+    ("/api/videos", {"files": {"file": ("x.mp4", b"video")}, "data": {"zone": ZONE}}),
+    ("/api/jobs/missing/retry", {}),
+    ("/api/documents", {"files": {"file": ("rules.txt", b"procedure")}}),
+    ("/api/incidents/missing/investigate", {}),
+    ("/api/investigations/missing/review", {"json": {"approved": True}}),
+]
+
+
+@pytest.mark.parametrize("path,body", WRITE_ROUTES)
+def test_role_guards_on_every_write_route(app_client, path, body):
+    client, queued = app_client
+    assert client.post(path, **body).status_code == 401
+    assert client.post(path, headers=login(client, "viewer@test.local"), **body).status_code == 403
+    assert queued == []
+
+
+def test_enqueue_routes_jobs_to_the_right_queue(app_env, tmp_path, monkeypatch):
+    from app.api.dependencies import JobDispatcher
+    from app.workers import job_queue
+
+    engine, sessions = make_sessions(f"sqlite:///{tmp_path}/queue.db")
+    Base.metadata.create_all(engine)
+    kinds = {"v": "video", "d": "document", "i": "investigate", "r": "review"}
+    with sessions() as db:
+        db.add_all([Job(id=job_id, kind=kind, resource_id="x") for job_id, kind in kinds.items()])
+        db.commit()
+    sent = {}
+    monkeypatch.setattr(job_queue.run_job, "apply_async", lambda args, queue: sent.update({args[0]: queue}))
+    dispatcher = JobDispatcher(sessions)
+    for job_id in kinds:
+        dispatcher.enqueue(job_id)
+    assert sent == {"v": "processing", "d": "processing", "i": "investigation", "r": "investigation"}
+    engine.dispose()
+
+
+def test_app_starts_without_redis(tmp_path):
+    cfg = Settings(
+        jwt_secret="x" * 40,
+        data_dir=tmp_path,
+        database_url=f"sqlite:///{tmp_path}/api.db",
+        redis_url="redis://127.0.0.1:1/0",
+    )
+    _, sessions = make_sessions(cfg.database_url)
+    with TestClient(create_app(cfg, sessions)) as client:
+        assert client.get("/api/health").json() == {"status": "ok", "version": "0.1.0"}

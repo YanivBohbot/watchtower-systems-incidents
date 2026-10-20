@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 from app.integrations.live_hub import MemoryHub
-from app.api import create_app
+from app.api.application import create_app
 from app.core.security import hash_password
 from app.core.config import Settings
 from app.database.models import Alert, Base, Camera, Site, User

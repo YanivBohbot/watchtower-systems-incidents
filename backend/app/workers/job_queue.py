@@ -30,6 +30,11 @@ celery.conf.update(
 log = logging.getLogger(__name__)
 
 
+def queue_for_kind(kind: str) -> str:
+    """LLM jobs get their own queue so a long investigation never delays video or document processing."""
+    return "investigation" if kind in ("investigate", "review") else "processing"
+
+
 @celery.task(name="watchtower.run", soft_time_limit=900, time_limit=960)
 def run_job(job_id):
     from app.workers.job_handlers import execute
@@ -112,7 +117,6 @@ def sweep():
         with sessions() as db:
             jobs = list(db.scalars(select(Job).where(Job.status == "queued").limit(100)))
         for job in jobs:
-            queue = "investigation" if job.kind in ("investigate", "review") else "processing"
-            run_job.apply_async(args=[job.id], queue=queue)
+            run_job.apply_async(args=[job.id], queue=queue_for_kind(job.kind))
     finally:
         engine.dispose()
