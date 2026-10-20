@@ -1,3 +1,5 @@
+"""LLM agent that drafts an incident report from observations, procedures and ticket tools."""
+
 import json
 
 from langchain.agents import create_agent
@@ -6,8 +8,8 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from sqlalchemy import select
 
-from app.agent.schemas import Report, validate_report
 from app.database.models import Incident
+from app.investigation.schemas import Report, validate_report
 
 
 class Investigator:

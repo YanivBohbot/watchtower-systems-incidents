@@ -9,7 +9,7 @@ from app.core.security import hash_password
 from app.core.config import settings
 from app.database.models import Job, User
 from app.database.session import make_sessions
-from app.services.sites import seed_site
+from app.services.site_seeding import seed_site
 
 
 def main():

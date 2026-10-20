@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from qdrant_client import QdrantClient
 
-from app.adapters.vectors import QdrantIndex
+from app.integrations.qdrant_index import QdrantIndex
 
 
 def test_actual_qdrant_sdk_upsert_query_and_delete():

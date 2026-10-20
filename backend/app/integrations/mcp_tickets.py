@@ -1,3 +1,5 @@
+"""Client for the ticket MCP server: read-only tools for the agent, ticket creation after approval."""
+
 import json
 import sys
 

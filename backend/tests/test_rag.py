@@ -2,8 +2,8 @@ from pathlib import Path
 
 from app.database.models import Base, Document
 from app.database.session import make_sessions
-from app.adapters.storage import LocalStorage
-from app.services.knowledge import KnowledgeService
+from app.integrations.local_storage import LocalStorage
+from app.services.knowledge_base import KnowledgeService
 
 
 class Embeddings:

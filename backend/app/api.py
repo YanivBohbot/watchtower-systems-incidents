@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
-from app.adapters.storage import LocalStorage
+from app.integrations.local_storage import LocalStorage
 from app.core.security import token_for, verify_password
 from app.core.config import Settings
 from app.database.models import Alert, Camera, Document, Incident, Investigation, Job, Site, User, Video, uid
@@ -52,7 +52,7 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None, hub=None):
     if sessions is None:
         _, sessions = make_sessions(cfg.database_url)
     if hub is None:
-        from app.adapters.live import RedisHub
+        from app.integrations.live_hub import RedisHub
 
         hub = RedisHub(cfg.redis_url)  # connects lazily; live routes answer 503 while Redis is down
     storage = LocalStorage(cfg.data_dir / "files")

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from app.api import create_app
 from app.core.security import hash_password
 from app.core.security import token_for
-from app.adapters.storage import LocalStorage
+from app.integrations.local_storage import LocalStorage
 from app.core.config import Settings
 from app.database.models import Base, Job, User
 from app.database.session import make_sessions
@@ -162,7 +162,7 @@ def test_retry_resets_attempts(app_client):
 
 @pytest.fixture
 def live_client(tmp_path):
-    from app.adapters.live import MemoryHub
+    from app.integrations.live_hub import MemoryHub
     from app.database.models import Alert, Camera, Site
 
     hub = MemoryHub()

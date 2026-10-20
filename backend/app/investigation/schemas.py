@@ -1,3 +1,5 @@
+"""Structured report the agent must return, and the check that its citations were retrieved."""
+
 from pydantic import BaseModel, Field
 
 

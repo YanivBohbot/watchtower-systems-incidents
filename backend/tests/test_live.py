@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from app.database.models import Base, Camera, Site
 from app.database.session import make_sessions
-from app.services.sites import seed_site
+from app.services.site_seeding import seed_site
 
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "site-horizon.json"
 

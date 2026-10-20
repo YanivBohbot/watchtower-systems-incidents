@@ -6,18 +6,18 @@ import json
 from langchain_openai import OpenAIEmbeddings
 from langgraph.types import Command
 
-from app.adapters.storage import LocalStorage
-from app.adapters.tickets import McpTickets
-from app.adapters.vectors import QdrantIndex
-from app.adapters.vision import YoloDetector
-from app.agent.checkpoints import open_checkpointer
-from app.agent.investigator import Investigator
-from app.agent.workflow import build_workflow
+from app.integrations.local_storage import LocalStorage
+from app.integrations.mcp_tickets import McpTickets
+from app.integrations.qdrant_index import QdrantIndex
+from app.integrations.yolo_detector import YoloDetector
+from app.investigation.checkpoints import open_checkpointer
+from app.investigation.investigator import Investigator
+from app.investigation.workflow import build_workflow
 from app.core.config import settings
 from app.database.models import Investigation
 from app.database.session import make_sessions
-from app.services.knowledge import KnowledgeService
-from app.services.video import VideoService
+from app.services.knowledge_base import KnowledgeService
+from app.services.video_analysis import VideoService
 
 
 def knowledge_service(cfg, sessions):

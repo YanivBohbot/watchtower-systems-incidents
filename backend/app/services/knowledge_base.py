@@ -1,3 +1,5 @@
+"""Procedure knowledge base: index PDF/TXT documents as chunks and search them (RAG)."""
+
 from io import BytesIO
 from uuid import NAMESPACE_URL, uuid5
 

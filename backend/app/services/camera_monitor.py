@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from app.database.models import Alert, uid
 from app.domain.dwell_rule import DwellRule, Observation, Zone
-from app.services.annotate import annotate, encode_jpeg
+from app.services.frame_annotation import annotate, encode_jpeg
 
 log = logging.getLogger(__name__)
 

@@ -1,3 +1,5 @@
+"""Evidence, videos and documents stored as files under one root directory."""
+
 from pathlib import Path
 
 

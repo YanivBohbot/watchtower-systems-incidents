@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from app.agent.checkpoints import checkpoint_url, open_checkpointer
-from app.agent.workflow import build_workflow
+from app.investigation.checkpoints import checkpoint_url, open_checkpointer
+from app.investigation.workflow import build_workflow
 
 
 def test_checkpoint_url_strips_driver():

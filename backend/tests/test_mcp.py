@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from app.adapters.tickets import McpTickets
+from app.integrations.mcp_tickets import McpTickets
 
 
 def test_real_mcp_stdio_round_trip_and_idempotency(tmp_path):

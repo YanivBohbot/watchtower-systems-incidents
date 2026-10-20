@@ -1,3 +1,5 @@
+"""YOLO person detection with ByteTrack tracking (ultralytics, loaded lazily)."""
+
 from dataclasses import dataclass
 from pathlib import Path
 

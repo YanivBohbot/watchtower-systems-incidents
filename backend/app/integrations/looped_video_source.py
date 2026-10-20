@@ -1,3 +1,5 @@
+"""Frame source that replays a recorded video in a loop, standing in for a live camera."""
+
 from pathlib import Path
 
 import cv2

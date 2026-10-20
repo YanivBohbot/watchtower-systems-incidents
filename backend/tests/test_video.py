@@ -3,11 +3,11 @@ import numpy as np
 import pytest
 from sqlalchemy import select
 
-from app.adapters.storage import LocalStorage
+from app.integrations.local_storage import LocalStorage
 from app.database.models import Base, Incident, Video
 from app.database.session import make_sessions
-from app.services.video import VideoService
-from app.adapters.vision import TrackedObject
+from app.services.video_analysis import VideoService
+from app.integrations.yolo_detector import TrackedObject
 
 
 class Detector:

@@ -7,13 +7,13 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from app.adapters.camera import LoopedVideoSource
-from app.adapters.live import RedisHub
-from app.adapters.storage import LocalStorage
+from app.integrations.looped_video_source import LoopedVideoSource
+from app.integrations.live_hub import RedisHub
+from app.integrations.local_storage import LocalStorage
 from app.core.config import settings
 from app.database.models import Camera
 from app.database.session import make_sessions
-from app.services.live import CameraRunner
+from app.services.camera_monitor import CameraRunner
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def build_runners(sessions, storage, hub, detector_factory, analysis_fps, camera
 def main():
     logging.basicConfig(level=logging.INFO)
     cfg = settings()
-    from app.adapters.vision import YoloDetector
+    from app.integrations.yolo_detector import YoloDetector
 
     engine, sessions = make_sessions(cfg.database_url)
     runners = build_runners(

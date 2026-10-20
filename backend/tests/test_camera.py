@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 from sqlalchemy import select
 
-from app.adapters.camera import LoopedVideoSource
-from app.adapters.live import MemoryHub
-from app.adapters.storage import LocalStorage
-from app.adapters.vision import TrackedObject
+from app.integrations.looped_video_source import LoopedVideoSource
+from app.integrations.live_hub import MemoryHub
+from app.integrations.local_storage import LocalStorage
+from app.integrations.yolo_detector import TrackedObject
 from app.database.models import Alert, Base, Camera, Site
 from app.database.session import make_sessions
-from app.services.live import CameraRunner
+from app.services.camera_monitor import CameraRunner
 
 ZONE = {"x1": 0, "y1": 0, "x2": 1, "y2": 1, "dwell_seconds": 1}
 
@@ -223,7 +223,7 @@ def test_build_runners_only_for_enabled_cameras(live, tmp_path):
 
 @pytest.mark.skipif(not os.environ.get("WATCHTOWER_TEST_REDIS_URL"), reason="needs Redis")
 def test_redis_hub_round_trip():
-    from app.adapters.live import RedisHub
+    from app.integrations.live_hub import RedisHub
 
     hub = RedisHub(os.environ["WATCHTOWER_TEST_REDIS_URL"])
     events = hub.subscribe()

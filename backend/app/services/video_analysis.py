@@ -1,3 +1,5 @@
+"""Uploaded-video analysis: track people, apply the dwell rule, record incidents with evidence."""
+
 import tempfile
 from pathlib import Path
 
@@ -6,7 +8,7 @@ from sqlalchemy import select
 
 from app.database.models import Incident, Video, uid
 from app.domain.dwell_rule import DwellRule, Observation, Zone
-from app.services.annotate import annotate, encode_jpeg
+from app.services.frame_annotation import annotate, encode_jpeg
 
 
 class VideoService:

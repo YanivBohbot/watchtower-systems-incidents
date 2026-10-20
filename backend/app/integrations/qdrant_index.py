@@ -1,3 +1,5 @@
+"""Qdrant vector index holding the embeddings of procedure chunks."""
+
 from qdrant_client import QdrantClient, models
 
 
