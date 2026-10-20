@@ -211,7 +211,7 @@ def test_memory_hub_frame_expires():
 
 
 def test_build_runners_only_for_enabled_cameras(live, tmp_path):
-    from app.live import build_runners
+    from app.workers.camera_process import build_runners
 
     sessions, storage, hub = live
     with sessions() as db:

@@ -1,3 +1,5 @@
+"""ASGI entry point: `uvicorn app.main:app`."""
+
 from app.api import create_app
 from app.core.config import settings
 

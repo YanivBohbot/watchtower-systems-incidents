@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 @celery.task(name="watchtower.run", soft_time_limit=900, time_limit=960)
 def run_job(job_id):
-    from app.runtime import execute
+    from app.workers.job_handlers import execute
 
     engine, sessions = make_sessions(cfg.database_url)
     try:

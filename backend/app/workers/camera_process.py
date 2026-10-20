@@ -1,4 +1,4 @@
-"""Camera process: one runner thread per enabled camera. Run with `python -m app.live`."""
+"""Camera process: one runner thread per enabled camera. Run with `python -m app.workers.camera_process`."""
 
 import logging
 import signal

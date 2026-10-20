@@ -1,3 +1,5 @@
+"""Administration commands: create-user, seed-site, recover-job. Run with `python -m app.cli`."""
+
 import argparse
 import getpass
 import json

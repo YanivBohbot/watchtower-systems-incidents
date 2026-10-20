@@ -27,6 +27,9 @@ NEW_MODULES = [
     "app.investigation.workflow",
     "app.investigation.schemas",
     "app.investigation.checkpoints",
+    "app.workers.job_queue",
+    "app.workers.job_handlers",
+    "app.workers.camera_process",
 ]
 OLD_MODULES = [
     "app.config",
@@ -42,15 +45,18 @@ OLD_MODULES = [
     "app.services.live",
     "app.services.annotate",
     "app.services.sites",
+    "app.tasks",
+    "app.runtime",
+    "app.live",
 ]
 
 
 @pytest.mark.parametrize("name", NEW_MODULES)
-def test_new_module_imports(name):
+def test_new_module_imports(app_env, name):
     importlib.import_module(name)
 
 
 @pytest.mark.parametrize("name", OLD_MODULES)
-def test_old_module_is_gone(name):
+def test_old_module_is_gone(app_env, name):
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module(name)

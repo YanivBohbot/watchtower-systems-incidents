@@ -96,7 +96,7 @@ def create_app(cfg: Settings, sessions=None, dispatcher=None, hub=None):
             if dispatcher is not None:
                 dispatcher(job_id)
             else:
-                from app.tasks import run_job
+                from app.workers.job_queue import run_job
 
                 run_job.apply_async(
                     args=[job_id],

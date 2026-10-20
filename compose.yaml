@@ -63,27 +63,27 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    command: [celery, -A, app.tasks:celery, worker, -Q, processing, --concurrency=1, --loglevel=INFO]
+    command: [celery, -A, app.workers.job_queue:celery, worker, -Q, processing, --concurrency=1, --loglevel=INFO]
   investigator:
     <<: *backend
     depends_on:
       migrate:
         condition: service_completed_successfully
     # LangGraph checkpoints live in PostgreSQL (see app/agent/checkpoints.py).
-    command: [celery, -A, app.tasks:celery, worker, -Q, investigation, --concurrency=1, --loglevel=INFO]
+    command: [celery, -A, app.workers.job_queue:celery, worker, -Q, investigation, --concurrency=1, --loglevel=INFO]
   cameras:
     <<: *backend
     depends_on:
       migrate:
         condition: service_completed_successfully
     # One thread per enabled camera; videos are read from /data/cameras (see docs/GUIDE.md).
-    command: [python, -m, app.live]
+    command: [python, -m, app.workers.camera_process]
   scheduler:
     <<: *backend
     depends_on:
       migrate:
         condition: service_completed_successfully
-    command: [celery, -A, app.tasks:celery, beat, --loglevel=INFO, --schedule=/data/celerybeat-schedule]
+    command: [celery, -A, app.workers.job_queue:celery, beat, --loglevel=INFO, --schedule=/data/celerybeat-schedule]
   frontend:
     build:
       context: .

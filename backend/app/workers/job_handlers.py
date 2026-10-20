@@ -1,4 +1,4 @@
-"""Composition root: the only place where concrete adapters are wired."""
+"""What each job kind runs. The worker composition root: concrete adapters are wired here."""
 
 import asyncio
 import json

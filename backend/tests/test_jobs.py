@@ -14,12 +14,12 @@ def job_db(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path}/jobs.db")
     settings.cache_clear()
-    from app import tasks
+    from app.workers import job_queue
 
-    monkeypatch.setattr(tasks, "cfg", settings())
+    monkeypatch.setattr(job_queue, "cfg", settings())
     engine, sessions = make_sessions(settings().database_url)
     Base.metadata.create_all(engine)
-    yield tasks, sessions
+    yield job_queue, sessions
     engine.dispose()
     settings.cache_clear()
 
@@ -48,49 +48,49 @@ def job(sessions, job_id):
 
 
 def test_claim_sets_started_at_and_counts_attempts(job_db, monkeypatch):
-    tasks, sessions = job_db
-    from app import runtime
+    job_queue, sessions = job_db
+    from app.workers import job_handlers
 
-    monkeypatch.setattr(runtime, "execute", lambda kind, resource_id, progress: None)
+    monkeypatch.setattr(job_handlers, "execute", lambda kind, resource_id, progress: None)
     with sessions() as db:
         db.add(Job(id="a", kind="video", resource_id="v"))
         db.commit()
-    tasks.run_job.run("a")
+    job_queue.run_job.run("a")
     row = job(sessions, "a")
     assert row.attempts == 1
     assert row.started_at is not None
 
 
 def test_stale_running_job_is_requeued(job_db):
-    tasks, sessions = job_db
+    job_queue, sessions = job_db
     add_running_job(sessions, "stale", started_ago_seconds=1300, attempts=1)
-    assert tasks.recover_stale_jobs(sessions, NOW) == ["stale"]
+    assert job_queue.recover_stale_jobs(sessions, NOW) == ["stale"]
     row = job(sessions, "stale")
     assert row.status == "queued"
     assert row.started_at is None
 
 
 def test_sweep_leaves_recent_running_jobs_alone(job_db):
-    tasks, sessions = job_db
+    job_queue, sessions = job_db
     add_running_job(sessions, "fresh", started_ago_seconds=100, attempts=1)
-    assert tasks.recover_stale_jobs(sessions, NOW) == []
+    assert job_queue.recover_stale_jobs(sessions, NOW) == []
     assert job(sessions, "fresh").status == "running"
 
 
 def test_poison_job_fails_after_max_attempts(job_db):
-    tasks, sessions = job_db
+    job_queue, sessions = job_db
     add_running_job(sessions, "poison", started_ago_seconds=1300, attempts=3)
-    assert tasks.recover_stale_jobs(sessions, NOW) == []
+    assert job_queue.recover_stale_jobs(sessions, NOW) == []
     row = job(sessions, "poison")
     assert row.status == "failed"
     assert "worker" in row.error.lower()
 
 
 def test_requeue_is_conditional(job_db):
-    tasks, sessions = job_db
+    job_queue, sessions = job_db
     add_running_job(sessions, "stale", started_ago_seconds=1300, attempts=1)
-    first = tasks.recover_stale_jobs(sessions, NOW)
-    second = tasks.recover_stale_jobs(sessions, NOW)
+    first = job_queue.recover_stale_jobs(sessions, NOW)
+    second = job_queue.recover_stale_jobs(sessions, NOW)
     assert first == ["stale"]
     assert second == []
 
@@ -100,9 +100,9 @@ def test_worker_claims_once_and_records_failure_without_exposing_details(tmp_pat
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path}/jobs.db")
     settings.cache_clear()
-    from app import runtime, tasks
+    from app.workers import job_handlers, job_queue
 
-    monkeypatch.setattr(tasks, "cfg", settings())
+    monkeypatch.setattr(job_queue, "cfg", settings())
     engine, sessions = make_sessions(settings().database_url)
     Base.metadata.create_all(engine)
     with sessions() as db:
@@ -116,10 +116,10 @@ def test_worker_claims_once_and_records_failure_without_exposing_details(tmp_pat
             raise ValueError("internal-detail-not-for-http")
         progress(50)
 
-    monkeypatch.setattr(runtime, "execute", execute)
-    tasks.run_job.run("good")
-    tasks.run_job.run("good")
-    tasks.run_job.run("bad")
+    monkeypatch.setattr(job_handlers, "execute", execute)
+    job_queue.run_job.run("good")
+    job_queue.run_job.run("good")
+    job_queue.run_job.run("bad")
     with sessions() as db:
         rows = {row.id: row for row in db.scalars(select(Job))}
         assert rows["good"].status == "completed"
@@ -131,8 +131,8 @@ def test_worker_claims_once_and_records_failure_without_exposing_details(tmp_pat
 
 
 def test_late_worker_does_not_overwrite_a_reclaimed_job(job_db, monkeypatch):
-    tasks, sessions = job_db
-    from app import runtime
+    job_queue, sessions = job_db
+    from app.workers import job_handlers
 
     def execute(kind, resource_id, progress):
         # While this worker is stuck, the sweep requeues the job and another worker claims it.
@@ -142,11 +142,11 @@ def test_late_worker_does_not_overwrite_a_reclaimed_job(job_db, monkeypatch):
             db.commit()
         progress(50)
 
-    monkeypatch.setattr(runtime, "execute", execute)
+    monkeypatch.setattr(job_handlers, "execute", execute)
     with sessions() as db:
         db.add(Job(id="slow", kind="video", resource_id="v"))
         db.commit()
-    tasks.run_job.run("slow")
+    job_queue.run_job.run("slow")
     row = job(sessions, "slow")
     assert row.status == "running"
     assert row.progress == 0
