@@ -66,7 +66,6 @@ export default function App() {
   );
   const [tab, setTab] = useState<Tab>("live");
   const [notice, setNotice] = useState("");
-  const draft = useVideoDraft();
   const user = useQuery({
     queryKey: ["me", token],
     queryFn: () => request<User>("/me", token),
@@ -79,6 +78,7 @@ export default function App() {
     documents = useList<Document>("documents", token, signedIn),
     incidents = useList<Incident>("incidents", token, signedIn),
     investigations = useList<Investigation>("investigations", token, signedIn);
+  const draft = useVideoDraft(videos.data, token);
   function refresh() {
     void queryClient.invalidateQueries();
   }

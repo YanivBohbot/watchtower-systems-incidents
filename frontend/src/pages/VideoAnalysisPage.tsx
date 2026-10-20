@@ -15,14 +15,40 @@ const initialZone: Zone = {
 };
 
 /**
- * The video being prepared (file + zone) and the selected video. Held by App so
- * they survive a switch to another tab and back.
+ * The video being prepared (file + zone), the selected video and its downloaded
+ * media. Held by App, which stays mounted, so a switch to another tab and back
+ * keeps the selection and does not download the video again.
  */
-export function useVideoDraft() {
+export function useVideoDraft(videos: Video[] | undefined, token: string) {
   const [file, setFile] = useState<File | null>(null);
   const [zone, setZone] = useState<Zone>(initialZone);
   const [selected, setSelected] = useState("");
-  return { file, setFile, zone, setZone, selected, setSelected };
+  const [localUrl, setLocalUrl] = useState("");
+  const activeVideo = videos?.find((v) => v.id === selected) || videos?.[0];
+  const serverMedia = useMedia(
+    !file && activeVideo ? `/videos/${activeVideo.id}/content` : null,
+    token,
+  );
+  useEffect(() => {
+    if (!file) {
+      setLocalUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setLocalUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  return {
+    file,
+    setFile,
+    zone,
+    setZone,
+    selected,
+    setSelected,
+    localUrl,
+    activeVideo,
+    serverMedia,
+  };
 }
 
 export type VideoDraft = ReturnType<typeof useVideoDraft>;
@@ -49,22 +75,16 @@ export default function VideoAnalysisPage({
   busy: boolean;
   onInvestigate: (incidentId: string) => void;
 }) {
-  const { file, setFile, zone, setZone, selected, setSelected } = draft;
-  const [localUrl, setLocalUrl] = useState("");
-  const activeVideo = videos?.find((v) => v.id === selected) || videos?.[0];
-  const serverMedia = useMedia(
-    !file && activeVideo ? `/videos/${activeVideo.id}/content` : null,
-    token,
-  );
-  useEffect(() => {
-    if (!file) {
-      setLocalUrl("");
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setLocalUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+  const {
+    file,
+    setFile,
+    zone,
+    setZone,
+    setSelected,
+    localUrl,
+    activeVideo,
+    serverMedia,
+  } = draft;
   const visibleIncidents =
     incidents?.filter((i) => i.video_id === activeVideo?.id) || [];
   return (

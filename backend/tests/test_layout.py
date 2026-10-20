@@ -74,3 +74,31 @@ def test_new_module_imports(app_env, name):
 def test_old_module_is_gone(app_env, name):
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module(name)
+
+
+# Which application packages each package may import (docs/GUIDE.md, section 0).
+ALLOWED_IMPORTS = {
+    "core": set(),
+    "database": set(),
+    "domain": set(),
+    "integrations": set(),
+    "services": {"database", "domain", "integrations"},
+    "investigation": {"database", "domain", "integrations"},
+    "workers": {"core", "database", "domain", "integrations", "investigation", "services"},
+    "api": {"core", "database", "domain", "integrations", "workers"},
+}
+
+
+@pytest.mark.parametrize("package", sorted(ALLOWED_IMPORTS))
+def test_package_imports_follow_the_layers(package):
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "app" / package
+    imported = {
+        node.module.split(".")[1]
+        for path in root.rglob("*.py")
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("app.")
+    }
+    assert imported - {package} <= ALLOWED_IMPORTS[package]

@@ -19,7 +19,7 @@ backend/app/
 ├── integrations/      external systems: storage, YOLO, Qdrant, MCP tickets, video sources, live hub
 └── workers/           background processes: Celery job queue, job handlers, camera process
 
-backend/tests/         same folders as app/, plus test_layout.py, test_entry_points.py and support/
+backend/tests/         mirrors app/ where there is code to test, plus test_layout.py, test_entry_points.py and support/
 frontend/src/
 ├── main.tsx  App.tsx  sign-in gate and navigation
 ├── api/               HTTP client, response types, polling and media hooks
@@ -28,10 +28,12 @@ frontend/src/
 └── styles/            global stylesheet
 ```
 
-A layer only imports the layers below it: `api` and `workers` call `services` and
-`investigation`, which use `domain`, `database` and `integrations`. `domain` imports
-nothing from the application. `backend/tests/test_layout.py` fails if one of the
-documented modules disappears or an old path comes back.
+Imports only point down the layers. `api` uses `core`, `database`, `domain` and
+`integrations`, and publishes jobs through `workers.job_queue`. `workers` run the
+jobs with `services` and `investigation`, which use `domain`, `database` and
+`integrations`. `core`, `database`, `domain` and `integrations` import nothing
+from the rest of the application. `backend/tests/test_layout.py` checks these
+rules, and fails if a documented module disappears or an old path comes back.
 
 ## 1. Why this architecture?
 

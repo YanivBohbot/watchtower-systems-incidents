@@ -100,7 +100,7 @@ watchtower/
       integrations/   storage, YOLO, Qdrant, MCP tickets, video sources, live hub
       workers/        Celery job queue, job handlers, camera process
     migrations/       Alembic history
-    tests/            same folders as app/, plus layout and entry-point checks
+    tests/            mirrors app/, plus layout, layer and entry-point checks
   frontend/
     src/
       api/            HTTP client, response types, polling and media hooks
