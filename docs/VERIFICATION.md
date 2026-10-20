@@ -73,6 +73,39 @@ OPERATIONS.md.
 Live detection is people only in this milestone. No latency or accuracy figure is
 claimed yet; measurements are planned for milestone 8.
 
+## Code restructure — October 20, 2026
+
+The rows above keep the module paths that existed when they were run. The code
+was then reorganized into folders without changing behaviour; old paths map to
+new ones as follows (`backend/app/` prefix omitted).
+
+| Old path | New path |
+|---|---|
+| `config.py`, `auth.py` | `core/config.py`, `core/security.py` |
+| `db.py` | `database/models.py` + `database/session.py` |
+| `domain/rules.py`, `text.py`, `ports.py` | `domain/dwell_rule.py`, `text_chunking.py`, `interfaces.py` |
+| `api.py` | `api/application.py`, `api/dependencies.py`, `api/schemas.py`, `api/uploads.py`, `api/routes/*.py` |
+| `adapters/*` | `integrations/local_storage.py`, `yolo_detector.py`, `qdrant_index.py`, `mcp_tickets.py`, `looped_video_source.py`, `live_hub.py` |
+| `services/video.py`, `knowledge.py`, `live.py`, `annotate.py`, `sites.py` | `services/video_analysis.py`, `knowledge_base.py`, `camera_monitor.py`, `frame_annotation.py`, `site_seeding.py` |
+| `agent/*` | `investigation/*` |
+| `tasks.py`, `runtime.py`, `live.py` | `workers/job_queue.py`, `workers/job_handlers.py`, `workers/camera_process.py` |
+| `python -m app.live`, `celery -A app.tasks:celery` | `python -m app.workers.camera_process`, `celery -A app.workers.job_queue:celery` |
+| `frontend/src/api.ts`, `types.ts`, `LiveWall.tsx`, `ZoneEditor.tsx`, `style.css` | `src/api/client.ts`, `src/api/types.ts`, `src/pages/LiveCamerasPage.tsx`, `src/components/ZoneEditor.tsx`, `src/styles/global.css` |
+| `backend/tests/test_*.py`, `ui_server.py` | `backend/tests/<package>/test_*.py`, `tests/support/ui_server.py` |
+
+| Check | Result | Actual scope |
+|---|---|---|
+| Python suite `pytest -q` (Python 3.12, Windows) | **129 passed, 2 skipped** | The 52 earlier tests unchanged apart from import paths, plus the package layout, layer import rules, process entry points, Celery task names, route table, role guards on every write route, queue routing, start without Redis, and imports used by `scripts/` |
+| Ruff | **Passed** | `ruff check app tests migrations`, now including import sorting (`I`) |
+| Route contract | **Identical** | OpenAPI paths, parameters, request bodies and responses of the old `api.py` and the new routers compared: same 20 routes; only the generated `operationId` names differ, after handler renames |
+| React build `npm run build` | **Passed** | TypeScript check and Vite bundle; the CSS bundle is byte-identical |
+| Playwright | **4 scenarios passed** | The 3 earlier scenarios unchanged, plus a tab-switch scenario: the selected video is downloaded once and still shown after visiting another tab |
+| API boot | **Passed** | `uvicorn app.main:app` with SQLite: `/api/health` 200, a protected route 401 without a token |
+| `docker compose config` | **Passed** | Compose file valid with the new module paths |
+| Independent review | **Done** | Whole-branch review; two behaviour findings (video re-download on tab switch, a stale import in `scripts/smoke_vision.py`) and two documentation inaccuracies fixed, each with a test where one applies |
+| Docker images, `docker compose up` | **Not run** | Not built in this session, to stay within the machine's memory; the Dockerfile only references `app.main:app`, which the boot check covers |
+| Redis, PostgreSQL, live OpenAI | **Not run** | Same limits as milestone 2 |
+
 ## Reproducing the checks
 
 ```bash

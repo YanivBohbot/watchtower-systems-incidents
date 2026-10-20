@@ -89,27 +89,31 @@ The system does not recognize a person's identity or intent.
 watchtower/
   backend/
     app/
-      domain/       contracts, geometry and dwell rule
-      adapters/     storage, YOLO, Qdrant and MCP
-      services/     video and document pipelines
-      agent/        agent, report schema and HITL workflow
-      api.py        HTTP interface and permissions
-      auth.py       passwords and tokens
-      db.py         SQL models and sessions
-      runtime.py    adapter wiring
-      tasks.py      Celery tasks and SQL outbox
-      cli.py        local administration
-    migrations/     Alembic history
-    tests/          business, API, video, RAG, agent and MCP tests
+      main.py         ASGI entry point
+      cli.py          local administration: users, sites, stuck jobs
+      core/           settings, passwords and tokens
+      database/       SQL tables and sessions
+      domain/         dwell rule, text chunking, interfaces for adapters
+      api/            HTTP: app factory, permissions, one router per domain
+      services/       video analysis, procedure knowledge base, live cameras
+      investigation/  agent, report schema and human-review workflow
+      integrations/   storage, YOLO, Qdrant, MCP tickets, video sources, live hub
+      workers/        Celery job queue, job handlers, camera process
+    migrations/       Alembic history
+    tests/            mirrors app/, plus layout, layer and entry-point checks
   frontend/
-    src/            React components, HTTP client and styles
-    tests/          Playwright browser scenario
-  mcp_server/       MCP ticket server over stdio
-  skills/           versioned agent instructions
-  examples/         fictitious demo procedure
-  scripts/          local environment file generation
-  docs/             detailed explanation and report
-  compose.yaml      services, networks and volumes
+    src/
+      api/            HTTP client, response types, polling and media hooks
+      pages/          one file per tab, plus sign-in
+      components/     zone editor, status badge, evidence image, job table
+      styles/         global stylesheet
+    tests/            Playwright browser scenarios
+  mcp_server/         MCP ticket server over stdio
+  skills/             versioned agent instructions
+  examples/           fictitious demo procedure and site
+  scripts/            local environment file generation
+  docs/               detailed explanation and report
+  compose.yaml        services, networks and volumes
 ```
 
 ## Tests without an API key

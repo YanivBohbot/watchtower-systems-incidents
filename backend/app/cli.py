@@ -1,3 +1,5 @@
+"""Administration commands: create-user, seed-site, recover-job. Run with `python -m app.cli`."""
+
 import argparse
 import getpass
 import json
@@ -5,10 +7,11 @@ from pathlib import Path
 
 from sqlalchemy import select, update
 
-from app.auth import hash_password
-from app.config import settings
-from app.db import Job, User, make_sessions
-from app.services.sites import seed_site
+from app.core.config import settings
+from app.core.security import hash_password
+from app.database.models import Job, User
+from app.database.session import make_sessions
+from app.services.site_seeding import seed_site
 
 
 def main():

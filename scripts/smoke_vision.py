@@ -12,7 +12,7 @@ def main():
     args = parser.parse_args()
     import cv2
     import ultralytics
-    from app.adapters.vision import YoloDetector
+    from app.integrations.yolo_detector import YoloDetector
     sample = Path(ultralytics.__file__).parent / 'assets/bus.jpg'
     if not sample.is_file():
         raise SystemExit('Ultralytics sample image is not available in this installation')

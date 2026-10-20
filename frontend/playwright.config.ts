@@ -5,7 +5,7 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:5174", headless: true },
   webServer: [
     {
-      command: `${process.env.WATCHTOWER_PYTHON || "python"} -m uvicorn ui_server:build_app --factory --app-dir ../backend/tests --host 127.0.0.1 --port 8011`,
+      command: `${process.env.WATCHTOWER_PYTHON || "python"} -m uvicorn ui_server:build_app --factory --app-dir ../backend/tests/support --host 127.0.0.1 --port 8011`,
       env: { PYTHONPATH: "../backend" },
       url: "http://127.0.0.1:8011/api/health",
       reuseExistingServer: false,
