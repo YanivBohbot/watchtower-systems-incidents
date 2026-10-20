@@ -120,7 +120,10 @@ and re-indexing; do not reuse the existing collection with incompatible vectors.
 For a video: check format, duration, resolution, access to the YOLO weights and
 available CPU time. `lap` is installed explicitly for ByteTrack. On a closed
 network, pre-install `/data/models/yolov8n.pt` in the volume; the weights are not
-shipped with the project.
+shipped with the project. `YOLO_CONFIDENCE` (default `0.5`, strictly between 0
+and 1) is the minimum detector score kept, for uploaded videos and live cameras
+alike: lower it if people are missed, raise it if objects are mistaken for
+people. Restart the worker and the camera process after changing it.
 
 For an investigation: check the LLM model, its availability for the key in use,
 the API quota and the MCP process logs. An invented reference makes the report

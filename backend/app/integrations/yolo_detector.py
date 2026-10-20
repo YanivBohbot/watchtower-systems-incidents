@@ -15,13 +15,14 @@ class TrackedObject:
 
 
 class YoloDetector:
-    """One model/tracker instance per video; no tracker state shared across jobs."""
+    """Owns one model and its ByteTrack state: one instance per uploaded video, or per live camera
+    (reused across loops of its video and cleared with `reset()`), so no tracker state is shared."""
 
-    def __init__(self, model_path="yolov8n.pt"):
+    def __init__(self, model_path="yolov8n.pt", confidence=0.5):
         from ultralytics import YOLO
 
         Path(model_path).parent.mkdir(parents=True, exist_ok=True)
-        self.model_path = model_path
+        self.model_path, self.confidence = model_path, confidence
         self.model = YOLO(model_path)
 
     def reset(self) -> None:
@@ -31,9 +32,9 @@ class YoloDetector:
             tracker.reset()
 
     def track(self, frame) -> list[TrackedObject]:
-        result = self.model.track(frame, persist=True, classes=[0], conf=0.5, tracker="bytetrack.yaml", verbose=False)[
-            0
-        ]
+        result = self.model.track(
+            frame, persist=True, classes=[0], conf=self.confidence, tracker="bytetrack.yaml", verbose=False
+        )[0]
         boxes = result.boxes
         if boxes is None or boxes.id is None:
             return []

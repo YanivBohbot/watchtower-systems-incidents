@@ -240,9 +240,12 @@ path passed to that method.
 `YoloDetector` imports Ultralytics only when instantiated, so the backend and the
 business tests work without installing the weights or PyTorch.
 
-One instance is created **per video**, to isolate ByteTrack's state. `track()`
-calls YOLO with `persist=True`, the ByteTrack tracker and COCO class `0`
-(person). SDK tensors are converted into stable Python objects. `lap` is declared
+One instance is created **per uploaded video**, to isolate ByteTrack's state; a
+live camera keeps one instance for its whole run and clears the tracker with
+`reset()` when its video loops, without reloading the weights. `track()` calls
+YOLO with `persist=True`, the ByteTrack tracker, COCO class `0` (person) and a
+minimum score of `YOLO_CONFIDENCE` (default `0.5`; boxes scored below it are
+dropped before tracking and the dwell rule). SDK tensors are converted into stable Python objects. `lap` is declared
 explicitly to avoid a surprise install on the first tracking call.
 
 ### `backend/app/services/video_analysis.py`
@@ -425,7 +428,8 @@ It implements the `FrameSource` interface, so an RTSP source could replace it.
 `CameraRunner.step()` computes which frame matches the wall-clock time, skips
 the late ones, runs the detector, publishes the annotated frame and status, and
 feeds the `DwellRule`. When the rule fires, `_raise_alert()` stores a snapshot,
-commits an `Alert` row, then publishes the event. Any error marks the camera
+commits an `Alert` row, then publishes the event. Like an incident, the alert
+details record the tracked point (`bottom_center`) and the model used. Any error marks the camera
 `error` instead of raising. `run()` paces the steps and retries failed sources.
 
 ### `backend/app/integrations/live_hub.py` and `backend/app/workers/camera_process.py`

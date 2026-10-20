@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4.1-mini"
     openai_api_key: SecretStr = SecretStr("")
     yolo_model: str = "yolov8n.pt"
+    yolo_confidence: float = Field(default=0.5, gt=0, lt=1)  # minimum detector score kept
     max_upload_mb: int = 100
     max_video_seconds: int = 180
     max_video_pixels: int = 3840 * 2160

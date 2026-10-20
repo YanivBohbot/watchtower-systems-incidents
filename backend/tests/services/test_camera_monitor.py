@@ -110,6 +110,8 @@ def test_dwelling_person_raises_exactly_one_alert(live, tmp_path):
     assert len(rows) == 1
     assert rows[0].kind == "person_dwell"
     assert rows[0].details["track_id"] == 1
+    assert rows[0].details["point"] == "bottom_center"
+    assert rows[0].details["model"] == "Detector"
     assert storage.read(rows[0].snapshot_key).startswith(b"\xff\xd8")
     event = events.get(timeout=0)
     assert event["type"] == "alert" and event["alert"]["id"] == rows[0].id
