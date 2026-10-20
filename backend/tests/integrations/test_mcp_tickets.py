@@ -6,7 +6,7 @@ from app.integrations.mcp_tickets import McpTickets
 
 def test_real_mcp_stdio_round_trip_and_idempotency(tmp_path):
     async def scenario():
-        server = Path(__file__).resolve().parents[2] / "mcp_server/server.py"
+        server = Path(__file__).resolve().parents[3] / "mcp_server/server.py"
         tickets = McpTickets(server, tmp_path / "tickets.db")
         tools = await tickets.read_tools()
         assert {tool.name for tool in tools} == {"search_tickets", "get_ticket"}

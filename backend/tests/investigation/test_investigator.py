@@ -65,7 +65,7 @@ def test_actual_langchain_agent_calls_tool_and_returns_validated_report(tmp_path
         db.commit()
         db.add(Incident(id="i", video_id="v", track_id=1, seconds=5, evidence_key="e.jpg", details={}))
         db.commit()
-    cfg = Settings(jwt_secret="x" * 40, skill_path=Path(__file__).resolve().parents[2] / "skills/investigate/SKILL.md")
+    cfg = Settings(jwt_secret="x" * 40, skill_path=Path(__file__).resolve().parents[3] / "skills/investigate/SKILL.md")
     agent = Investigator(sessions, Knowledge(), Tickets(), cfg, model_factory=lambda _: ScriptedModel())
     report = asyncio.run(agent.run("i"))
     assert "get_evidence" in report["tool_trace"]

@@ -14,7 +14,7 @@ def test_fresh_alembic_schema_matches_models(tmp_path):
     url = f"sqlite:///{tmp_path}/migration.db"
     subprocess.run(
         [sys.executable, "-m", "alembic", "upgrade", "head"],
-        cwd=Path(__file__).resolve().parents[1],
+        cwd=Path(__file__).resolve().parents[2],
         check=True,
         capture_output=True,
         env={
