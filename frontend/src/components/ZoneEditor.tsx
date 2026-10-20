@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { PointerEvent } from "react";
-import type { Zone } from "./types";
+import type { Zone } from "../api/types";
 
 export default function ZoneEditor({
   src,

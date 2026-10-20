@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera as CameraIcon, Siren, X } from "lucide-react";
-import { mediaUrl, request, streamEvents } from "./api";
-import type { Alert, Camera } from "./types";
+import { mediaUrl, request, streamEvents } from "../api/client";
+import type { Alert, Camera } from "../api/types";
 
 const kinds: Record<string, string> = {
   person_dwell: "Person in restricted zone",
@@ -105,7 +105,7 @@ function Snapshot({ alert, token }: { alert: Alert; token: string }) {
   ) : null;
 }
 
-export default function LiveWall({ token }: { token: string }) {
+export default function LiveCamerasPage({ token }: { token: string }) {
   const queryClient = useQueryClient();
   const cameras = useQuery({
     queryKey: ["cameras", token],
